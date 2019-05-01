@@ -37,7 +37,6 @@ SOURCES += \
     common/packagechooserdialog.cpp \
     common/symbolchooserdialog.cpp \
     dev/deviceeditorwidget.cpp \
-    dev/padsignalmapeditorwidget.cpp \
     lib/librarylisteditorwidget.cpp \
     lib/libraryoverviewwidget.cpp \
     libraryeditor.cpp \
@@ -117,7 +116,6 @@ HEADERS += \
     common/packagechooserdialog.h \
     common/symbolchooserdialog.h \
     dev/deviceeditorwidget.h \
-    dev/padsignalmapeditorwidget.h \
     lib/librarylisteditorwidget.h \
     lib/libraryoverviewwidget.h \
     libraryeditor.h \

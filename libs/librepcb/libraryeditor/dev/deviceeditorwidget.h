@@ -47,6 +47,7 @@ class Component;
 class Package;
 class SymbolPreviewGraphicsItem;
 class FootprintPreviewGraphicsItem;
+class DevicePadSignalMapModel;
 
 namespace editor {
 
@@ -110,6 +111,7 @@ private:  // Data
   QScopedPointer<ComponentCategoryListEditorWidget> mCategoriesEditorWidget;
   QScopedPointer<Device>                            mDevice;
   QScopedPointer<DefaultGraphicsLayerProvider>      mGraphicsLayerProvider;
+  QScopedPointer<DevicePadSignalMapModel>           mPadSignalMapModel;
 
   // component
   QScopedPointer<Component>                         mComponent;

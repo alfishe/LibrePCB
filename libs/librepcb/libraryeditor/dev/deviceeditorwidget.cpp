@@ -34,6 +34,7 @@
 #include <librepcb/library/dev/cmd/cmddeviceedit.h>
 #include <librepcb/library/dev/cmd/cmddevicepadsignalmapitemedit.h>
 #include <librepcb/library/dev/device.h>
+#include <librepcb/library/dev/devicepadsignalmapmodel.h>
 #include <librepcb/library/msg/msgmissingauthor.h>
 #include <librepcb/library/msg/msgmissingcategories.h>
 #include <librepcb/library/msg/msgnamenottitlecase.h>
@@ -87,11 +88,20 @@ DeviceEditorWidget::DeviceEditorWidget(const Context&  context,
   // Load element.
   mDevice.reset(new Device(std::unique_ptr<TransactionalDirectory>(
       new TransactionalDirectory(mFileSystem))));  // can throw
-  mUi->padSignalMapEditorWidget->setReferences(mUndoStack.data(),
-                                               &mDevice->getPadSignalMap());
+  mPadSignalMapModel.reset(new DevicePadSignalMapModel(
+      mDevice->getPadSignalMap(), *mUndoStack, this));
   updateDeviceComponentUuid(mDevice->getComponentUuid());
   updateDevicePackageUuid(mDevice->getPackageUuid());
   updateMetadata();
+
+  // Setup pad-signal-map table.
+  QSortFilterProxyModel* proxyModel = new QSortFilterProxyModel(this);
+  proxyModel->setSourceModel(mPadSignalMapModel.data());
+  mUi->tableView->setModel(proxyModel);
+  mUi->tableView->setItemDelegate(new DevicePadSignalMapDelegate(this));
+  mUi->tableView->resizeColumnsToContents();
+  mUi->tableView->resizeRowsToContents();
+  mUi->tableView->sortByColumn(0, Qt::AscendingOrder);
 
   // Show "interface broken" warning when related properties are modified.
   memorizeDeviceInterface();
@@ -130,7 +140,7 @@ DeviceEditorWidget::DeviceEditorWidget(const Context&  context,
 }
 
 DeviceEditorWidget::~DeviceEditorWidget() noexcept {
-  mUi->padSignalMapEditorWidget->setReferences(nullptr, nullptr);
+  // mUi->padSignalMapEditorWidget->setReferences(nullptr, nullptr);
 }
 
 /*******************************************************************************
@@ -319,7 +329,7 @@ void DeviceEditorWidget::updateDeviceComponentUuid(const Uuid& uuid) noexcept {
     mComponent.reset(new Component(
         std::unique_ptr<TransactionalDirectory>(new TransactionalDirectory(
             TransactionalFileSystem::openRO(fp)))));  // can throw
-    mUi->padSignalMapEditorWidget->setSignalList(mComponent->getSignals());
+    mPadSignalMapModel->setSignalList(mComponent->getSignals());
     mUi->lblComponentName->setText(
         *mComponent->getNames().value(getLibLocaleOrder()));
     mUi->lblComponentName->setToolTip(
@@ -327,7 +337,7 @@ void DeviceEditorWidget::updateDeviceComponentUuid(const Uuid& uuid) noexcept {
     mUi->lblComponentName->setStyleSheet("");
     updateComponentPreview();
   } catch (const Exception& e) {
-    mUi->padSignalMapEditorWidget->setSignalList(ComponentSignalList());
+    mPadSignalMapModel->setSignalList(ComponentSignalList());
     mUi->lblComponentName->setText(e.getMsg());
     mUi->lblComponentName->setToolTip(QString());
     mUi->lblComponentName->setStyleSheet("color: red;");
@@ -373,7 +383,7 @@ void DeviceEditorWidget::updateDevicePackageUuid(const Uuid& uuid) noexcept {
     mPackage.reset(new Package(
         std::unique_ptr<TransactionalDirectory>(new TransactionalDirectory(
             TransactionalFileSystem::openRO(fp)))));  // can throw
-    mUi->padSignalMapEditorWidget->setPadList(mPackage->getPads());
+    mPadSignalMapModel->setPadList(mPackage->getPads());
     mUi->lblPackageName->setText(
         *mPackage->getNames().value(getLibLocaleOrder()));
     mUi->lblPackageName->setToolTip(
@@ -381,7 +391,7 @@ void DeviceEditorWidget::updateDevicePackageUuid(const Uuid& uuid) noexcept {
     mUi->lblPackageName->setStyleSheet("");
     updatePackagePreview();
   } catch (const Exception& e) {
-    mUi->padSignalMapEditorWidget->setPadList(PackagePadList());
+    mPadSignalMapModel->setPadList(PackagePadList());
     mUi->lblPackageName->setText(e.getMsg());
     mUi->lblPackageName->setToolTip(QString());
     mUi->lblPackageName->setStyleSheet("color: red;");
