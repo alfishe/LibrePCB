@@ -29,6 +29,7 @@
 #include <librepcb/common/graphics/defaultgraphicslayerprovider.h>
 #include <librepcb/common/graphics/graphicsscene.h>
 #include <librepcb/common/undocommandgroup.h>
+#include <librepcb/common/widgets/comboboxdelegate.h>
 #include <librepcb/library/cmd/cmdlibraryelementedit.h>
 #include <librepcb/library/cmp/component.h>
 #include <librepcb/library/dev/cmd/cmddeviceedit.h>
@@ -95,13 +96,18 @@ DeviceEditorWidget::DeviceEditorWidget(const Context&  context,
   updateMetadata();
 
   // Setup pad-signal-map table.
+  QStringList            sigs       = {"A", "B", "C"};
+  QStringListModel*      listModel  = new QStringListModel(sigs, this);
   QSortFilterProxyModel* proxyModel = new QSortFilterProxyModel(this);
   proxyModel->setSourceModel(mPadSignalMapModel.data());
   mUi->tableView->setModel(proxyModel);
-  mUi->tableView->setItemDelegate(new DevicePadSignalMapDelegate(this));
+  mUi->tableView->setItemDelegateForColumn(
+      1, new ComboBoxDelegate(listModel, Qt::UserRole, this));
   mUi->tableView->resizeColumnsToContents();
   mUi->tableView->resizeRowsToContents();
   mUi->tableView->sortByColumn(0, Qt::AscendingOrder);
+  mUi->tableView->setMouseTracking(true);
+  mUi->tableView->viewport()->setMouseTracking(true);
 
   // Show "interface broken" warning when related properties are modified.
   memorizeDeviceInterface();

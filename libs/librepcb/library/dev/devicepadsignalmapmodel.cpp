@@ -70,7 +70,7 @@ int DevicePadSignalMapModel::rowCount(const QModelIndex& parent) const {
 
 int DevicePadSignalMapModel::columnCount(const QModelIndex& parent) const {
   if (!parent.isValid()) {
-    return 2;
+    return _COLUMN_COUNT;
   }
   return 0;
 }
@@ -82,7 +82,7 @@ QVariant DevicePadSignalMapModel::data(const QModelIndex& index,
         mPadSignalMap.value(index.row());
     if (item) {
       switch (index.column()) {
-        case 0: {
+        case COLUMN_PAD: {
           Uuid                              uuid = item->getPadUuid();
           std::shared_ptr<const PackagePad> pad  = mPads.find(uuid);
           switch (role) {
@@ -97,7 +97,7 @@ QVariant DevicePadSignalMapModel::data(const QModelIndex& index,
               return QVariant();
           }
         }
-        case 1: {
+        case COLUMN_SIGNAL: {
           tl::optional<Uuid>                     uuid = item->getSignalUuid();
           std::shared_ptr<const ComponentSignal> sig =
               uuid ? mSignals.find(*uuid) : nullptr;
@@ -135,9 +135,9 @@ QVariant DevicePadSignalMapModel::headerData(int             section,
                                              int             role) const {
   if ((orientation == Qt::Horizontal) && (role == Qt::DisplayRole)) {
     switch (section) {
-      case 0:
+      case COLUMN_PAD:
         return tr("Package Pad");
-      case 1:
+      case COLUMN_SIGNAL:
         return tr("Component Signal");
     }
   } else if ((orientation == Qt::Vertical) && (role == Qt::DisplayRole)) {
@@ -151,7 +151,7 @@ QVariant DevicePadSignalMapModel::headerData(int             section,
 
 Qt::ItemFlags DevicePadSignalMapModel::flags(const QModelIndex& index) const {
   Qt::ItemFlags f = QAbstractTableModel::flags(index);
-  if (index.isValid() && index.column() == 1) {
+  if (index.isValid() && (index.column() == COLUMN_SIGNAL)) {
     f |= Qt::ItemIsEditable;
   }
   return f;
@@ -160,8 +160,8 @@ Qt::ItemFlags DevicePadSignalMapModel::flags(const QModelIndex& index) const {
 bool DevicePadSignalMapModel::setData(const QModelIndex& index,
                                       const QVariant& value, int role) {
   try {
-    if (!index.parent().isValid() && index.column() == 1 &&
-        role == Qt::EditRole) {
+    if (!index.parent().isValid() && (index.column() == COLUMN_SIGNAL) &&
+        (role == Qt::EditRole)) {
       std::shared_ptr<DevicePadSignalMapItem> item =
           mPadSignalMap.value(index.row());
       if (item) {
@@ -183,7 +183,6 @@ void DevicePadSignalMapModel::listObjectAdded(
     const DevicePadSignalMap& list, int newIndex,
     const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept {
   Q_UNUSED(list);
-  Q_UNUSED(ptr);
   beginInsertRows(QModelIndex(), newIndex, newIndex);
   endInsertRows();
   connect(ptr.get(), &DevicePadSignalMapItem::signalUuidChanged, this,
@@ -194,7 +193,6 @@ void DevicePadSignalMapModel::listObjectRemoved(
     const DevicePadSignalMap& list, int oldIndex,
     const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept {
   Q_UNUSED(list);
-  Q_UNUSED(ptr);
   disconnect(ptr.get(), &DevicePadSignalMapItem::signalUuidChanged, this,
              &DevicePadSignalMapModel::signalUuidChanged);
   beginRemoveRows(QModelIndex(), oldIndex, oldIndex);
@@ -207,84 +205,8 @@ void DevicePadSignalMapModel::signalUuidChanged(
   int row =
       mPadSignalMap.indexOf(static_cast<DevicePadSignalMapItem*>(sender()));
   if (row >= 0) {
-    QModelIndex i = index(row, 1);
-    dataChanged(i, i);
+    dataChanged(index(row, COLUMN_SIGNAL), index(row, COLUMN_SIGNAL));
   }
-}
-
-/*******************************************************************************
- *  Constructors / Destructor
- ******************************************************************************/
-
-DevicePadSignalMapDelegate::DevicePadSignalMapDelegate(QObject* parent) noexcept
-  : QStyledItemDelegate(parent) {
-}
-
-DevicePadSignalMapDelegate::~DevicePadSignalMapDelegate() noexcept {
-}
-
-void DevicePadSignalMapDelegate::paint(QPainter*                   painter,
-                                       const QStyleOptionViewItem& option,
-                                       const QModelIndex& index) const {
-  if (index.column() == 1) {
-    if (option.state & QStyle::State_Selected) {
-      painter->fillRect(option.rect, option.palette.highlight());
-    }
-    QStyleOptionComboBox opt;
-    opt.rect        = option.rect;
-    opt.state       = option.state;
-    opt.currentText = index.data().toString();
-    QApplication::style()->drawComplexControl(QStyle::CC_ComboBox, &opt,
-                                              painter);
-    QApplication::style()->drawControl(QStyle::CE_ComboBoxLabel, &opt, painter);
-  } else {
-    QStyledItemDelegate::paint(painter, option, index);
-  }
-}
-
-QWidget* DevicePadSignalMapDelegate::createEditor(
-    QWidget* parent, const QStyleOptionViewItem& option,
-    const QModelIndex& index) const {
-  Q_UNUSED(option);
-  Q_UNUSED(index);
-  QComboBox* editor = new QComboBox(parent);
-  editor->setFrame(false);
-  auto cmpSignals =
-      index.data(Qt::EditRole).value<QVector<QPair<QVariant, QVariant>>>();
-  foreach (const auto& sig, cmpSignals) {
-    editor->addItem(sig.first.toString(), sig.second);
-    // Set display role to a QVariant to get numbers sorted by value and strings
-    // alphabetically.
-    editor->setItemData(editor->count() - 1, sig.first, Qt::DisplayRole);
-  }
-  editor->model()->sort(0);
-  editor->insertItem(0, tr("(not connected)"));
-  QTimer::singleShot(0, editor, &QComboBox::showPopup);
-  return editor;
-}
-
-void DevicePadSignalMapDelegate::setEditorData(QWidget*           editor,
-                                               const QModelIndex& index) const {
-  tl::optional<Uuid> signalUuid =
-      Uuid::tryFromString(index.model()->data(index, Qt::UserRole).toString());
-  QComboBox* cbx = static_cast<QComboBox*>(editor);
-  int        currentIndex =
-      signalUuid ? cbx->findData(signalUuid->toStr(), Qt::UserRole) : -1;
-  cbx->setCurrentIndex(currentIndex > 0 ? currentIndex : 0);
-}
-
-void DevicePadSignalMapDelegate::setModelData(QWidget*            editor,
-                                              QAbstractItemModel* model,
-                                              const QModelIndex&  index) const {
-  QComboBox* cbx = static_cast<QComboBox*>(editor);
-  model->setData(index, cbx->currentData(), Qt::EditRole);
-}
-
-void DevicePadSignalMapDelegate::updateEditorGeometry(
-    QWidget* editor, const QStyleOptionViewItem& option,
-    const QModelIndex& index) const {
-  Q_UNUSED(index);
-  editor->setGeometry(option.rect);
 }
 
 /*******************************************************************************

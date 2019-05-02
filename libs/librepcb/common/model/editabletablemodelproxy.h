@@ -17,66 +17,62 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
-#define LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
+#ifndef LIBREPCB_LIBRARY_EDITABLEMODELPROXY_H
+#define LIBREPCB_LIBRARY_EDITABLEMODELPROXY_H
 
 /*******************************************************************************
  *  Includes
  ******************************************************************************/
-#include <librepcb/library/cmp/componentsignal.h>
-
 #include <QtCore>
-#include <QtWidgets>
 
 /*******************************************************************************
  *  Namespace / Forward Declarations
  ******************************************************************************/
 namespace librepcb {
 
-class UndoStack;
-
-namespace library {
-
-class ComponentSignalListModel;
-
-namespace editor {
-
 /*******************************************************************************
- *  Class ComponentSignalListEditorWidget
+ *  Class EditableTableModelProxy
  ******************************************************************************/
 
 /**
- * @brief The ComponentSignalListEditorWidget class
+ * @brief The EditableTableModelProxy class
  */
-class ComponentSignalListEditorWidget final : public QWidget {
+class EditableTableModelProxy final : public QIdentityProxyModel {
   Q_OBJECT
 
 public:
   // Constructors / Destructor
-  explicit ComponentSignalListEditorWidget(QWidget* parent = nullptr) noexcept;
-  ComponentSignalListEditorWidget(
-      const ComponentSignalListEditorWidget& other) = delete;
-  ~ComponentSignalListEditorWidget() noexcept;
+  EditableTableModelProxy() = delete;
+  EditableTableModelProxy(const EditableTableModelProxy& other) noexcept;
+  EditableTableModelProxy(QObject* parent = nullptr) noexcept;
+  ~EditableTableModelProxy() noexcept;
 
-  // Setters
-  void setReferences(UndoStack* undoStack, ComponentSignalList* list) noexcept;
+  // Inherited from QAbstractProxyModel
+  int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+  // int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  // QModelIndex index(int row, int column,
+  //                  const QModelIndex& parent = QModelIndex()) const override;
+  // QModelIndex parent(const QModelIndex& child) const override;
+  // QVariant      data(const QModelIndex& index,
+  //                   int                role = Qt::DisplayRole) const
+  //                   override;
+  // QVariant      headerData(int section, Qt::Orientation orientation,
+  //                         int role = Qt::DisplayRole) const override;
+  // Qt::ItemFlags flags(const QModelIndex& index) const override;
+  //QModelIndex mapToSource(const QModelIndex& proxyIndex) const override;
+  //QModelIndex mapFromSource(const QModelIndex& sourceIndex) const override;
 
   // Operator Overloadings
-  ComponentSignalListEditorWidget& operator       =(
-      const ComponentSignalListEditorWidget& rhs) = delete;
+  EditableTableModelProxy& operator=(
+      const EditableTableModelProxy& rhs) noexcept;
 
 private:  // Data
-  QScopedPointer<QTableView> mView;
-  QScopedPointer<QSortFilterProxyModel> mProxy;
-  QScopedPointer<ComponentSignalListModel> mModel;
 };
 
 /*******************************************************************************
  *  End of File
  ******************************************************************************/
 
-}  // namespace editor
-}  // namespace library
 }  // namespace librepcb
 
-#endif  // LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
+#endif  // LIBREPCB_LIBRARY_EDITABLEMODELPROXY_H

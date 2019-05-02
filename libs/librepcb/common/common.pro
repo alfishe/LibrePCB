@@ -94,6 +94,7 @@ SOURCES += \
     graphics/stroketextgraphicsitem.cpp \
     graphics/textgraphicsitem.cpp \
     gridproperties.cpp \
+    model/editabletablemodelproxy.cpp \
     network/filedownload.cpp \
     network/networkaccessmanager.cpp \
     network/networkrequest.cpp \
@@ -123,6 +124,7 @@ SOURCES += \
     widgets/attributetypecombobox.cpp \
     widgets/attributeunitcombobox.cpp \
     widgets/centeredcheckbox.cpp \
+    widgets/comboboxdelegate.cpp \
     widgets/graphicslayercombobox.cpp \
     widgets/patheditorwidget.cpp \
     widgets/plaintextedit.cpp \
@@ -209,6 +211,7 @@ HEADERS += \
     graphics/stroketextgraphicsitem.h \
     graphics/textgraphicsitem.h \
     gridproperties.h \
+    model/editabletablemodelproxy.h \
     network/filedownload.h \
     network/networkaccessmanager.h \
     network/networkrequest.h \
@@ -241,6 +244,7 @@ HEADERS += \
     widgets/attributetypecombobox.h \
     widgets/attributeunitcombobox.h \
     widgets/centeredcheckbox.h \
+    widgets/comboboxdelegate.h \
     widgets/graphicslayercombobox.h \
     widgets/patheditorwidget.h \
     widgets/plaintextedit.h \

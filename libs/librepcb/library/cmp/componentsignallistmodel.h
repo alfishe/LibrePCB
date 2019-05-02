@@ -17,15 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBREPCB_LIBRARY_DEVICEPADSIGNALMAPMODEL_H
-#define LIBREPCB_LIBRARY_DEVICEPADSIGNALMAPMODEL_H
+#ifndef LIBREPCB_LIBRARY_COMPONENTSIGNALLISTMODEL_H
+#define LIBREPCB_LIBRARY_COMPONENTSIGNALLISTMODEL_H
 
 /*******************************************************************************
  *  Includes
  ******************************************************************************/
-#include "../cmp/componentsignal.h"
-#include "../pkg/packagepad.h"
-#include "devicepadsignalmap.h"
+#include "componentsignal.h"
 
 #include <QtCore>
 
@@ -39,34 +37,32 @@ class UndoStack;
 namespace library {
 
 /*******************************************************************************
- *  Class DevicePadSignalMapModel
+ *  Class ComponentSignalListModel
  ******************************************************************************/
 
 /**
- * @brief The DevicePadSignalMapModel class
+ * @brief The ComponentSignalListModel class
  */
-class DevicePadSignalMapModel final : public QAbstractTableModel,
-                                      private DevicePadSignalMap::IF_Observer {
+class ComponentSignalListModel final
+  : public QAbstractTableModel,
+    private ComponentSignalList::IF_Observer {
   Q_OBJECT
 
-  enum Column { COLUMN_PAD, COLUMN_SIGNAL, _COLUMN_COUNT };
-
 public:
-  // Constructors / Destructor
-  DevicePadSignalMapModel() = delete;
-  DevicePadSignalMapModel(const DevicePadSignalMapModel& other) noexcept;
-  DevicePadSignalMapModel(DevicePadSignalMap& map, UndoStack& undoStack,
-                          QObject* parent = nullptr) noexcept;
-  ~DevicePadSignalMapModel() noexcept;
+  enum Column {
+    COLUMN_NAME,
+    COLUMN_ISREQUIRED,
+    COLUMN_FORCEDNETNAME,
+    COLUMN_ACTIONS,
+    _COLUMN_COUNT
+  };
 
-  void setSignalList(const ComponentSignalList& list) noexcept {
-    mSignals = list;
-    emit dataChanged(index(0, 1), index(rowCount() - 1, 1));
-  }
-  void setPadList(const PackagePadList& list) noexcept {
-    mPads = list;
-    emit dataChanged(index(0, 0), index(rowCount() - 1, 0));
-  }
+  // Constructors / Destructor
+  ComponentSignalListModel() = delete;
+  ComponentSignalListModel(const ComponentSignalListModel& other) noexcept;
+  ComponentSignalListModel(ComponentSignalList& list, UndoStack& undoStack,
+                           QObject* parent = nullptr) noexcept;
+  ~ComponentSignalListModel() noexcept;
 
   // Inherited from QAbstractItemModel
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -80,23 +76,21 @@ public:
                         int role = Qt::EditRole) override;
 
   // Operator Overloadings
-  DevicePadSignalMapModel& operator=(
-      const DevicePadSignalMapModel& rhs) noexcept;
+  ComponentSignalListModel& operator=(
+      const ComponentSignalListModel& rhs) noexcept;
 
 private:
   virtual void listObjectAdded(
-      const DevicePadSignalMap& list, int newIndex,
-      const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept override;
+      const ComponentSignalList& list, int newIndex,
+      const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
   virtual void listObjectRemoved(
-      const DevicePadSignalMap& list, int oldIndex,
-      const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept override;
-  void signalUuidChanged(const tl::optional<Uuid>& uuid) noexcept;
+      const ComponentSignalList& list, int oldIndex,
+      const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
+  void signalEdited() noexcept;
 
 private:  // Data
-  DevicePadSignalMap& mPadSignalMap;
-  ComponentSignalList mSignals;
-  PackagePadList      mPads;
-  UndoStack&          mUndoStack;
+  ComponentSignalList& mSignalList;
+  UndoStack&           mUndoStack;
 };
 
 /*******************************************************************************
@@ -106,4 +100,4 @@ private:  // Data
 }  // namespace library
 }  // namespace librepcb
 
-#endif  // LIBREPCB_LIBRARY_DEVICEPADSIGNALMAPMODEL_H
+#endif  // LIBREPCB_LIBRARY_COMPONENTSIGNALLISTMODEL_H

@@ -17,14 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
-#define LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
+#ifndef LIBREPCB_COMBOBOXDELEGATE_H
+#define LIBREPCB_COMBOBOXDELEGATE_H
 
 /*******************************************************************************
  *  Includes
  ******************************************************************************/
-#include <librepcb/library/cmp/componentsignal.h>
-
 #include <QtCore>
 #include <QtWidgets>
 
@@ -33,50 +31,46 @@
  ******************************************************************************/
 namespace librepcb {
 
-class UndoStack;
-
-namespace library {
-
-class ComponentSignalListModel;
-
-namespace editor {
+class GraphicsLayer;
 
 /*******************************************************************************
- *  Class ComponentSignalListEditorWidget
+ *  Class ComboBoxDelegate
  ******************************************************************************/
 
 /**
- * @brief The ComponentSignalListEditorWidget class
+ * @brief Subclass of QStyledItemDelegate which uses QComboBox as item editor
  */
-class ComponentSignalListEditorWidget final : public QWidget {
+class ComboBoxDelegate final : public QStyledItemDelegate {
   Q_OBJECT
 
 public:
   // Constructors / Destructor
-  explicit ComponentSignalListEditorWidget(QWidget* parent = nullptr) noexcept;
-  ComponentSignalListEditorWidget(
-      const ComponentSignalListEditorWidget& other) = delete;
-  ~ComponentSignalListEditorWidget() noexcept;
+  explicit ComboBoxDelegate(QAbstractItemModel* items, int dataRole,
+                            QObject*            parent = nullptr) noexcept;
+  ComboBoxDelegate(const ComboBoxDelegate& other) = delete;
+  ~ComboBoxDelegate() noexcept;
 
-  // Setters
-  void setReferences(UndoStack* undoStack, ComponentSignalList* list) noexcept;
+  // Inherited from QStyledItemDelegate
+  QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+                        const QModelIndex& index) const override;
+  void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+  void setModelData(QWidget* editor, QAbstractItemModel* model,
+                    const QModelIndex& index) const override;
+  void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option,
+                            const QModelIndex& index) const override;
 
   // Operator Overloadings
-  ComponentSignalListEditorWidget& operator       =(
-      const ComponentSignalListEditorWidget& rhs) = delete;
+  ComboBoxDelegate& operator=(const ComboBoxDelegate& rhs) = delete;
 
 private:  // Data
-  QScopedPointer<QTableView> mView;
-  QScopedPointer<QSortFilterProxyModel> mProxy;
-  QScopedPointer<ComponentSignalListModel> mModel;
+  QPointer<QAbstractItemModel> mItems;
+  int mDataRole;
 };
 
 /*******************************************************************************
  *  End of File
  ******************************************************************************/
 
-}  // namespace editor
-}  // namespace library
 }  // namespace librepcb
 
-#endif  // LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
+#endif  // LIBREPCB_COMBOBOXDELEGATE_H
