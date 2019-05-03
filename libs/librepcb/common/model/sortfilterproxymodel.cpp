@@ -17,67 +17,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
-#define LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
-
 /*******************************************************************************
  *  Includes
  ******************************************************************************/
-#include <librepcb/library/cmp/componentsignal.h>
+#include "sortfilterproxymodel.h"
 
 #include <QtCore>
-#include <QtWidgets>
 
 /*******************************************************************************
- *  Namespace / Forward Declarations
+ *  Namespace
  ******************************************************************************/
 namespace librepcb {
 
-class UndoStack;
-class EditableTableModelProxy;
-
-namespace library {
-
-class ComponentSignalListModel;
-
-namespace editor {
-
 /*******************************************************************************
- *  Class ComponentSignalListEditorWidget
+ *  Constructors / Destructor
  ******************************************************************************/
 
-/**
- * @brief The ComponentSignalListEditorWidget class
- */
-class ComponentSignalListEditorWidget final : public QWidget {
-  Q_OBJECT
+SortFilterProxyModel::SortFilterProxyModel(QObject* parent) noexcept
+  : QSortFilterProxyModel(parent) {
+}
 
-public:
-  // Constructors / Destructor
-  explicit ComponentSignalListEditorWidget(QWidget* parent = nullptr) noexcept;
-  ComponentSignalListEditorWidget(
-      const ComponentSignalListEditorWidget& other) = delete;
-  ~ComponentSignalListEditorWidget() noexcept;
+SortFilterProxyModel::~SortFilterProxyModel() noexcept {
+}
 
-  // Setters
-  void setReferences(UndoStack* undoStack, ComponentSignalList* list) noexcept;
+/*******************************************************************************
+ *  Inherited from QSortFilterProxyModel
+ ******************************************************************************/
 
-  // Operator Overloadings
-  ComponentSignalListEditorWidget& operator       =(
-      const ComponentSignalListEditorWidget& rhs) = delete;
-
-private:  // Data
-  QScopedPointer<QTableView> mView;
-  QScopedPointer<QSortFilterProxyModel> mProxy;
-  QScopedPointer<ComponentSignalListModel> mModel;
-};
+bool SortFilterProxyModel::lessThan(const QModelIndex& source_left,
+                                    const QModelIndex& source_right) const {
+  if (source_left.row() >= sourceModel()->rowCount() - 1) {
+    return false;
+  } else if (source_right.row() >= sourceModel()->rowCount() - 1) {
+    return true;
+  }
+  return QSortFilterProxyModel::lessThan(source_left, source_right);
+}
 
 /*******************************************************************************
  *  End of File
  ******************************************************************************/
 
-}  // namespace editor
-}  // namespace library
 }  // namespace librepcb
-
-#endif  // LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H

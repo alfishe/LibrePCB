@@ -17,55 +17,55 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBREPCB_LIBRARY_EDITABLEMODELPROXY_H
-#define LIBREPCB_LIBRARY_EDITABLEMODELPROXY_H
+#ifndef LIBREPCB_BUTTONDELEGATE_H
+#define LIBREPCB_BUTTONDELEGATE_H
 
 /*******************************************************************************
  *  Includes
  ******************************************************************************/
 #include <QtCore>
+#include <QtWidgets>
 
 /*******************************************************************************
  *  Namespace / Forward Declarations
  ******************************************************************************/
 namespace librepcb {
 
+class GraphicsLayer;
+
 /*******************************************************************************
- *  Class EditableTableModelProxy
+ *  Class ButtonDelegate
  ******************************************************************************/
 
 /**
- * @brief The EditableTableModelProxy class
+ * @brief Subclass of QStyledItemDelegate which shows buttons
  */
-class EditableTableModelProxy final : public QIdentityProxyModel {
+class ButtonDelegate final : public QStyledItemDelegate {
   Q_OBJECT
 
 public:
   // Constructors / Destructor
-  EditableTableModelProxy() = delete;
-  EditableTableModelProxy(const EditableTableModelProxy& other) noexcept;
-  EditableTableModelProxy(QObject* parent = nullptr) noexcept;
-  ~EditableTableModelProxy() noexcept;
+  explicit ButtonDelegate(int      dataRole = Qt::EditRole,
+                          QObject* parent   = nullptr) noexcept;
+  ButtonDelegate(const ButtonDelegate& other) = delete;
+  ~ButtonDelegate() noexcept;
 
-  // Inherited from QAbstractProxyModel
-  int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-  QModelIndex index(int row, int column,
-                    const QModelIndex& parent = QModelIndex()) const override;
-  QVariant      data(const QModelIndex& index,
-                     int                role = Qt::DisplayRole) const override;
-  QVariant      headerData(int section, Qt::Orientation orientation,
-                           int role = Qt::DisplayRole) const override;
-  Qt::ItemFlags flags(const QModelIndex& index) const override;
-  QModelIndex   mapToSource(const QModelIndex& proxyIndex) const override;
-  //QItemSelection mapSelectionToSource(
-  //    const QItemSelection& proxySelection) const override;
+  // Inherited from QStyledItemDelegate
+  void     paint(QPainter* painter, const QStyleOptionViewItem& option,
+                 const QModelIndex& index) const override;
+  QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+                        const QModelIndex& index) const override;
+  void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+  void setModelData(QWidget* editor, QAbstractItemModel* model,
+                    const QModelIndex& index) const override;
+  void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option,
+                            const QModelIndex& index) const override;
 
   // Operator Overloadings
-  EditableTableModelProxy& operator=(
-      const EditableTableModelProxy& rhs) noexcept;
+  ButtonDelegate& operator=(const ButtonDelegate& rhs) = delete;
 
 private:  // Data
+  int mDataRole;
 };
 
 /*******************************************************************************
@@ -74,4 +74,4 @@ private:  // Data
 
 }  // namespace librepcb
 
-#endif  // LIBREPCB_LIBRARY_EDITABLEMODELPROXY_H
+#endif  // LIBREPCB_BUTTONDELEGATE_H

@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBREPCB_LIBRARY_EDITABLEMODELPROXY_H
-#define LIBREPCB_LIBRARY_EDITABLEMODELPROXY_H
+#ifndef LIBREPCB_LIBRARY_SORTFILTERPROXYMODEL_H
+#define LIBREPCB_LIBRARY_SORTFILTERPROXYMODEL_H
 
 /*******************************************************************************
  *  Includes
@@ -31,39 +31,28 @@
 namespace librepcb {
 
 /*******************************************************************************
- *  Class EditableTableModelProxy
+ *  Class SortFilterProxyModel
  ******************************************************************************/
 
 /**
- * @brief The EditableTableModelProxy class
+ * @brief The SortFilterProxyModel class
  */
-class EditableTableModelProxy final : public QIdentityProxyModel {
+class SortFilterProxyModel final : public QSortFilterProxyModel {
   Q_OBJECT
 
 public:
   // Constructors / Destructor
-  EditableTableModelProxy() = delete;
-  EditableTableModelProxy(const EditableTableModelProxy& other) noexcept;
-  EditableTableModelProxy(QObject* parent = nullptr) noexcept;
-  ~EditableTableModelProxy() noexcept;
+  SortFilterProxyModel() = delete;
+  SortFilterProxyModel(const SortFilterProxyModel& other) noexcept;
+  SortFilterProxyModel(QObject* parent = nullptr) noexcept;
+  ~SortFilterProxyModel() noexcept;
 
-  // Inherited from QAbstractProxyModel
-  int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-  QModelIndex index(int row, int column,
-                    const QModelIndex& parent = QModelIndex()) const override;
-  QVariant      data(const QModelIndex& index,
-                     int                role = Qt::DisplayRole) const override;
-  QVariant      headerData(int section, Qt::Orientation orientation,
-                           int role = Qt::DisplayRole) const override;
-  Qt::ItemFlags flags(const QModelIndex& index) const override;
-  QModelIndex   mapToSource(const QModelIndex& proxyIndex) const override;
-  //QItemSelection mapSelectionToSource(
-  //    const QItemSelection& proxySelection) const override;
+  // Inherited from QSortFilterProxyModel
+  bool lessThan(const QModelIndex& source_left,
+                const QModelIndex& source_right) const override;
 
   // Operator Overloadings
-  EditableTableModelProxy& operator=(
-      const EditableTableModelProxy& rhs) noexcept;
+  SortFilterProxyModel& operator=(const SortFilterProxyModel& rhs) noexcept;
 
 private:  // Data
 };
@@ -74,4 +63,4 @@ private:  // Data
 
 }  // namespace librepcb
 
-#endif  // LIBREPCB_LIBRARY_EDITABLEMODELPROXY_H
+#endif  // LIBREPCB_LIBRARY_SORTFILTERPROXYMODEL_H

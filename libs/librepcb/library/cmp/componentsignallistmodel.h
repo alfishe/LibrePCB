@@ -91,6 +91,9 @@ private:
 private:  // Data
   ComponentSignalList& mSignalList;
   UndoStack&           mUndoStack;
+  QString              mNewName;
+  bool                 mNewIsRequired;
+  QString              mNewForcedNetName;
 };
 
 /*******************************************************************************

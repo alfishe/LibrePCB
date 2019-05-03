@@ -44,73 +44,145 @@ EditableTableModelProxy::~EditableTableModelProxy() noexcept {
  *  Inherited from QAbstractProxyModel
  ******************************************************************************/
 
- int EditableTableModelProxy::columnCount(const QModelIndex& parent) const {
-  int count = sourceModel()->columnCount(mapToSource(parent));
+int EditableTableModelProxy::columnCount(const QModelIndex& parent) const {
+  int count = QIdentityProxyModel::columnCount(parent);
   if (!parent.isValid()) {
     ++count;
   }
   return count;
 }
 
-// int EditableTableModelProxy::rowCount(const QModelIndex& parent) const {
-//  return sourceModel()->rowCount(mapToSource(parent));
-//}
-//
-// QModelIndex EditableTableModelProxy::index(int row, int column,
-//                                           const QModelIndex& parent) const {
-//  return createIndex(row, column);
-//}
-//
-// QModelIndex EditableTableModelProxy::parent(const QModelIndex& child) const {
-//  Q_UNUSED(child);
-//  return QModelIndex();
-//}
-//
-// QVariant EditableTableModelProxy::data(const QModelIndex& index,
-//                                       int                role) const {
-//  //if (!index.isValid() && (index.column() == sourceModel()->columnCount()))
-//  {
-//  //  if (role == Qt::DisplayRole) {
-//  //    return "Foo";
-//  //  } else {
-//  //    return QVariant();
-//  //  }
-//  //} else {
-//    return sourceModel()->data(mapToSource(index));
-//  //}
-//}
-//
-// QVariant EditableTableModelProxy::headerData(int             section,
-//                                             Qt::Orientation orientation,
-//                                             int             role) const {
-//  //if (section == sourceModel()->columnCount()) {
-//  //  if ((orientation == Qt::Horizontal) && (role == Qt::DisplayRole)) {
-//  //    return "Bar";
-//  //  } else {
-//  //    return QVariant();
-//  //  }
-//  //} else {
-//    return sourceModel()->headerData(section, orientation, role);
-//  //}
-//}
-//
-// Qt::ItemFlags EditableTableModelProxy::flags(const QModelIndex& index) const
-// {
-//  //if (!index.parent().isValid() &&
-//  //    (index.column() == sourceModel()->columnCount())) {
-//  //  return QAbstractProxyModel::flags(index);
-//  //} else {
-//    return sourceModel()->flags(mapToSource(index));
-//  //}
-//}
+int EditableTableModelProxy::rowCount(const QModelIndex& parent) const {
+  int count = QIdentityProxyModel::rowCount(parent);
+  if (!parent.isValid()) {
+    //++count;
+  }
+  return count;
+}
 
-//QModelIndex EditableTableModelProxy::mapToSource(
-//    const QModelIndex& proxyIndex) const {
-//  return sourceModel()->index(proxyIndex.row(), proxyIndex.column());
-//}
-//QModelIndex EditableTableModelProxy::mapFromSource(
-//    const QModelIndex& sourceIndex) const {
-//  return index(sourceIndex.row(), sourceIndex.column());
+QModelIndex EditableTableModelProxy::index(int row, int column,
+                                           const QModelIndex& parent) const {
+  if (!sourceModel()) {
+    return QModelIndex();
+  }
+  if (column == sourceModel()->columnCount()) {
+    return createIndex(
+        row, column,
+        QIdentityProxyModel::index(row, 0, parent).internalPointer());
+  }
+  if (row == sourceModel()->rowCount()) {
+    return createIndex(row, column);
+  }
+  return QIdentityProxyModel::index(row, column, parent);
+}
+
+QVariant EditableTableModelProxy::data(const QModelIndex& index,
+                                       int                role) const {
+  if (!sourceModel()) {
+    return QVariant();
+  }
+  if (index.column() == sourceModel()->columnCount()) {
+    if (role == Qt::DisplayRole) {
+      return "foo";
+    } else {
+      return QVariant();
+    }
+  }
+  if (index.row() == sourceModel()->rowCount()) {
+    if (role == Qt::DisplayRole) {
+      return "xyz";
+    } else {
+      return QVariant();
+    }
+  }
+  return QIdentityProxyModel::data(index, role);
+}
+
+QVariant EditableTableModelProxy::headerData(int             section,
+                                             Qt::Orientation orientation,
+                                             int             role) const {
+  if (!sourceModel()) {
+    return QVariant();
+  }
+  if ((orientation == Qt::Horizontal) &&
+      (section == sourceModel()->columnCount())) {
+    if (role == Qt::DisplayRole) {
+      return "bar";
+    } else {
+      return QVariant();
+    }
+  }
+  if ((orientation == Qt::Vertical) && (section == sourceModel()->rowCount())) {
+    if (role == Qt::DisplayRole) {
+      return tr("New");
+    } else {
+      return QVariant();
+    }
+  }
+  return QIdentityProxyModel::headerData(section, orientation, role);
+}
+
+Qt::ItemFlags EditableTableModelProxy::flags(const QModelIndex& index) const {
+  if (!sourceModel()) {
+    return 0;
+  } else if (index.column() == sourceModel()->columnCount()) {
+    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+  } else if (index.row() == sourceModel()->rowCount()) {
+    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+  } else {
+    return QIdentityProxyModel::flags(index);
+  }
+}
+
+QModelIndex EditableTableModelProxy::mapToSource(
+    const QModelIndex& proxyIndex) const {
+  if (!sourceModel() || !proxyIndex.isValid()) {
+    return QModelIndex();
+  }
+  if (proxyIndex.column() == sourceModel()->columnCount()) {
+    return QModelIndex();
+  }
+  if (proxyIndex.row() == sourceModel()->rowCount()) {
+    return QModelIndex();
+  }
+  return QIdentityProxyModel::mapToSource(proxyIndex);
+}
+
+//QItemSelection EditableTableModelProxy::mapSelectionToSource(
+//    const QItemSelection& proxySelection) const {
+//  QItemSelection sourceSelection;
+//
+//  if (!sourceModel()) {
+//    return sourceSelection;
+//  }
+//
+//  // mapToSource will give invalid index for our additional columns, so truncate
+//  // the selection to the columns known by the source model
+//  const int sourceColumnCount              = sourceModel()->columnCount();
+//  QItemSelection::const_iterator       it  = proxySelection.constBegin();
+//  const QItemSelection::const_iterator end = proxySelection.constEnd();
+//  for (; it != end; ++it) {
+//    Q_ASSERT(it->model() == this);
+//    QModelIndex topLeft = it->topLeft();
+//    Q_ASSERT(topLeft.isValid());
+//    Q_ASSERT(topLeft.model() == this);
+//    topLeft                 = topLeft.sibling(topLeft.row(), 0);
+//    QModelIndex bottomRight = it->bottomRight();
+//    Q_ASSERT(bottomRight.isValid());
+//    Q_ASSERT(bottomRight.model() == this);
+//    if (bottomRight.column() >= sourceColumnCount) {
+//      bottomRight =
+//          bottomRight.sibling(bottomRight.row(), sourceColumnCount - 1);
+//    }
+//    // This can lead to duplicate source indexes, so use merge().
+//    const QItemSelectionRange range(mapToSource(topLeft),
+//                                    mapToSource(bottomRight));
+//    QItemSelection            newSelection;
+//    newSelection << range;
+//    sourceSelection.merge(newSelection, QItemSelectionModel::Select);
+//  }
+//
+//  return sourceSelection;
 //}
 
 /*******************************************************************************
