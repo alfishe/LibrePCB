@@ -46,7 +46,7 @@ class ComboBoxDelegate final : public QStyledItemDelegate {
 public:
   // Constructors / Destructor
   explicit ComboBoxDelegate(QAbstractItemModel* items, int dataRole,
-                            QObject*            parent = nullptr) noexcept;
+                            QObject* parent = nullptr) noexcept;
   ComboBoxDelegate(const ComboBoxDelegate& other) = delete;
   ~ComboBoxDelegate() noexcept;
 
@@ -64,7 +64,7 @@ public:
 
 private:  // Data
   QPointer<QAbstractItemModel> mItems;
-  int mDataRole;
+  int                          mDataRole;
 };
 
 /*******************************************************************************

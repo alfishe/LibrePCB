@@ -20,9 +20,10 @@
 /*******************************************************************************
  *  Includes
  ******************************************************************************/
-#include "comboboxdelegate.h"
+#include "editabletablewidget.h"
 
 #include <QtCore>
+#include <QtWidgets>
 
 /*******************************************************************************
  *  Namespace
@@ -33,49 +34,39 @@ namespace librepcb {
  *  Constructors / Destructor
  ******************************************************************************/
 
-ComboBoxDelegate::ComboBoxDelegate(QAbstractItemModel* items, int dataRole,
-                                   QObject* parent) noexcept
-  : QStyledItemDelegate(parent), mItems(items), mDataRole(dataRole) {
+EditableTableWidget::EditableTableWidget(QWidget* parent) noexcept
+  : QTableView(parent) {
 }
 
-ComboBoxDelegate::~ComboBoxDelegate() noexcept {
+EditableTableWidget::~EditableTableWidget() noexcept {
 }
 
 /*******************************************************************************
- *  Inherited from QStyledItemDelegate
+ *  Inherited
  ******************************************************************************/
 
-QWidget* ComboBoxDelegate::createEditor(QWidget*                    parent,
-                                        const QStyleOptionViewItem& option,
-                                        const QModelIndex& index) const {
-  Q_UNUSED(option);
-  Q_UNUSED(index);
-  QComboBox* cbx = new QComboBox(parent);
-  cbx->setFrame(false);
-  cbx->setSizePolicy(QSizePolicy::Ignored, cbx->sizePolicy().verticalPolicy());
-  if (mItems) {
-    cbx->setModel(mItems.data());
+void EditableTableWidget::setModel(QAbstractItemModel* model) {
+  qDebug() << "model";
+  QTableView::setModel(model);
+}
+
+void EditableTableWidget::installButtons() {
+  if (model()) {
+    for (int i = 0; i < model()->rowCount() - 1; ++i) {
+      int size = rowHeight(i);
+      QToolButton* btn = new QToolButton();
+      btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      btn->setFixedSize(size, size);
+      btn->setIcon(QIcon(":/img/actions/minus.png"));
+      btn->setIconSize(QSize(size - 6, size - 6));
+      setIndexWidget(model()->index(i, model()->columnCount() - 1), btn);
+    }
   }
-  return cbx;
 }
 
-void ComboBoxDelegate::setEditorData(QWidget*           editor,
-                                     const QModelIndex& index) const {
-  QComboBox* cbx = static_cast<QComboBox*>(editor);
-  cbx->setCurrentIndex(cbx->findData(index.data(mDataRole), Qt::EditRole));
-}
-
-void ComboBoxDelegate::setModelData(QWidget* editor, QAbstractItemModel* model,
-                                    const QModelIndex& index) const {
-  QComboBox* cbx = static_cast<QComboBox*>(editor);
-  model->setData(index, cbx->currentData(mDataRole), Qt::EditRole);
-}
-
-void ComboBoxDelegate::updateEditorGeometry(QWidget*                    editor,
-                                            const QStyleOptionViewItem& option,
-                                            const QModelIndex& index) const {
-  Q_UNUSED(index);
-  editor->setGeometry(option.rect);
+void EditableTableWidget::rowsInserted(const QModelIndex& parent, int start,
+                                       int end) {
+  qDebug() << start << end;
 }
 
 /*******************************************************************************

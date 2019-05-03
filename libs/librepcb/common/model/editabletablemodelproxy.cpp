@@ -148,7 +148,7 @@ QModelIndex EditableTableModelProxy::mapToSource(
   return QIdentityProxyModel::mapToSource(proxyIndex);
 }
 
-//QItemSelection EditableTableModelProxy::mapSelectionToSource(
+// QItemSelection EditableTableModelProxy::mapSelectionToSource(
 //    const QItemSelection& proxySelection) const {
 //  QItemSelection sourceSelection;
 //
@@ -156,7 +156,8 @@ QModelIndex EditableTableModelProxy::mapToSource(
 //    return sourceSelection;
 //  }
 //
-//  // mapToSource will give invalid index for our additional columns, so truncate
+//  // mapToSource will give invalid index for our additional columns, so
+//  truncate
 //  // the selection to the columns known by the source model
 //  const int sourceColumnCount              = sourceModel()->columnCount();
 //  QItemSelection::const_iterator       it  = proxySelection.constBegin();

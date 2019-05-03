@@ -17,14 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
-#define LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
+#ifndef LIBREPCB_EDITABLETABLEWIDGET_H
+#define LIBREPCB_EDITABLETABLEWIDGET_H
 
 /*******************************************************************************
  *  Includes
  ******************************************************************************/
-#include <librepcb/library/cmp/componentsignal.h>
-
 #include <QtCore>
 #include <QtWidgets>
 
@@ -33,52 +31,40 @@
  ******************************************************************************/
 namespace librepcb {
 
-class UndoStack;
-class EditableTableModelProxy;
-class EditableTableWidget;
-
-namespace library {
-
-class ComponentSignalListModel;
-
-namespace editor {
-
 /*******************************************************************************
- *  Class ComponentSignalListEditorWidget
+ *  Class EditableTableWidget
  ******************************************************************************/
 
 /**
- * @brief The ComponentSignalListEditorWidget class
+ * @brief The EditableTableWidget class
  */
-class ComponentSignalListEditorWidget final : public QWidget {
+class EditableTableWidget : public QTableView {
   Q_OBJECT
 
 public:
   // Constructors / Destructor
-  explicit ComponentSignalListEditorWidget(QWidget* parent = nullptr) noexcept;
-  ComponentSignalListEditorWidget(
-      const ComponentSignalListEditorWidget& other) = delete;
-  ~ComponentSignalListEditorWidget() noexcept;
+  explicit EditableTableWidget(QWidget* parent = nullptr) noexcept;
+  EditableTableWidget(const EditableTableWidget& other) = delete;
+  virtual ~EditableTableWidget() noexcept;
 
-  // Setters
-  void setReferences(UndoStack* undoStack, ComponentSignalList* list) noexcept;
+  // Inherited
+  virtual void setModel(QAbstractItemModel* model) override;
+  void installButtons();
 
   // Operator Overloadings
-  ComponentSignalListEditorWidget& operator       =(
-      const ComponentSignalListEditorWidget& rhs) = delete;
+  EditableTableWidget& operator=(const EditableTableWidget& rhs) = delete;
 
-private:  // Data
-  QScopedPointer<EditableTableWidget>      mView;
-  QScopedPointer<QSortFilterProxyModel>    mProxy;
-  QScopedPointer<ComponentSignalListModel> mModel;
+protected:
+  virtual void rowsInserted(const QModelIndex& parent, int start,
+                            int end) override;
+
+private:
 };
 
 /*******************************************************************************
  *  End of File
  ******************************************************************************/
 
-}  // namespace editor
-}  // namespace library
 }  // namespace librepcb
 
-#endif  // LIBREPCB_LIBRARY_EDITOR_COMPONENTSIGNALLISTEDITORWIDGET_H
+#endif  // LIBREPCB_EDITABLETABLEWIDGET_H

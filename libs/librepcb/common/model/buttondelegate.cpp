@@ -47,33 +47,31 @@ ButtonDelegate::~ButtonDelegate() noexcept {
 void ButtonDelegate::paint(QPainter*                   painter,
                            const QStyleOptionViewItem& option,
                            const QModelIndex&          index) const {
+  // if (index.data(Qt::EditRole).canConvert<QStringList>()) {
+  QStringList buttons = qvariant_cast<QStringList>(index.data());
 
+  if (option.state & QStyle::State_MouseOver) {
+    painter->fillRect(option.rect, option.palette.highlight());
+  }
 
-  //if (index.data(Qt::EditRole).canConvert<QStringList>()) {
-    QStringList buttons = qvariant_cast<QStringList>(index.data());
+  QToolButton* btn = new QToolButton();
 
-    if (option.state & QStyle::State_MouseOver) {
-      painter->fillRect(option.rect, option.palette.highlight());
-    }
-
-    QToolButton* btn = new QToolButton();
-
-    //QStyleOptionToolButton opt;
-    //opt.rect = option.rect;
-    //opt.state = option.state;
-    //opt.icon = QIcon(":/img/actions/minus.png");
-    //opt.iconSize = QSize(10, 10);
-    //opt.arrowType = Qt::NoArrow;
-    //opt.features = QStyleOptionToolButton::None;
-    //opt.palette = qApp->palette();
-    //opt.toolButtonStyle = Qt::ToolButtonIconOnly;
-    //opt.subControls = QStyle::SC_ToolButton;
-    //QApplication::style()->drawComplexControl(QStyle::CC_ToolButton, &opt,
-    //                                          painter);
-    btn->render(painter);
+  // QStyleOptionToolButton opt;
+  // opt.rect = option.rect;
+  // opt.state = option.state;
+  // opt.icon = QIcon(":/img/actions/minus.png");
+  // opt.iconSize = QSize(10, 10);
+  // opt.arrowType = Qt::NoArrow;
+  // opt.features = QStyleOptionToolButton::None;
+  // opt.palette = qApp->palette();
+  // opt.toolButtonStyle = Qt::ToolButtonIconOnly;
+  // opt.subControls = QStyle::SC_ToolButton;
+  // QApplication::style()->drawComplexControl(QStyle::CC_ToolButton, &opt,
+  //                                          painter);
+  btn->render(painter);
   //} else {
- //   QStyledItemDelegate::paint(painter, option, index);
- // }
+  //   QStyledItemDelegate::paint(painter, option, index);
+  // }
 }
 
 QWidget* ButtonDelegate::createEditor(QWidget*                    parent,

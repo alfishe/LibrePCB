@@ -22,9 +22,10 @@
  ******************************************************************************/
 #include "componentsignallisteditorwidget.h"
 
-#include <librepcb/library/cmp/componentsignallistmodel.h>
-#include <librepcb/common/model/sortfilterproxymodel.h>
 #include <librepcb/common/model/buttondelegate.h>
+#include <librepcb/common/model/sortfilterproxymodel.h>
+#include <librepcb/common/widgets/editabletablewidget.h>
+#include <librepcb/library/cmp/componentsignallistmodel.h>
 
 #include <QtCore>
 #include <QtWidgets>
@@ -42,11 +43,11 @@ namespace editor {
 
 ComponentSignalListEditorWidget::ComponentSignalListEditorWidget(
     QWidget* parent) noexcept
-  : QWidget(parent), mView(new QTableView(this)), mModel() {
+  : QWidget(parent), mView(new EditableTableWidget(this)), mModel() {
   mView->setCornerButtonEnabled(false);
   mView->setSelectionBehavior(QAbstractItemView::SelectRows);
   mView->setSelectionMode(QAbstractItemView::SingleSelection);
-  //mView->setSortingEnabled(true);
+  // mView->setSortingEnabled(true);
   mView->setWordWrap(false);  // avoid too high cells due to word wrap
   mView->setAlternatingRowColors(true);
 
@@ -94,18 +95,22 @@ void ComponentSignalListEditorWidget::setReferences(
     mView->sortByColumn(ComponentSignalListModel::COLUMN_NAME,
                         Qt::AscendingOrder);
 
-    mView->setItemDelegateForColumn(ComponentSignalListModel::COLUMN_ACTIONS, new ButtonDelegate());
+    mView->setItemDelegateForColumn(ComponentSignalListModel::COLUMN_ACTIONS,
+                                    new ButtonDelegate());
 
-    //mView->setColumnWidth(ComponentSignalListModel::COLUMN_ACTIONS, mView->rowHeight(0));
+    // mView->setColumnWidth(ComponentSignalListModel::COLUMN_ACTIONS,
+    // mView->rowHeight(0));
 
-    //for (int i = 0; i < mModel->rowCount(); ++i) {
+    // for (int i = 0; i < mModel->rowCount(); ++i) {
     //  QToolButton* btn = new QToolButton();
     //  btn->setFixedSize(mView->rowHeight(i), mView->rowHeight(i));
     //  btn->setIcon(QIcon(":img/actions/minus.png"));
     //  mView->setIndexWidget(
     //      mProxy->index(i, ComponentSignalListModel::COLUMN_ACTIONS), btn);
     //}
-    //mView->resizeColumnToContents(ComponentSignalListModel::COLUMN_ACTIONS);
+    // mView->resizeColumnToContents(ComponentSignalListModel::COLUMN_ACTIONS);
+
+    mView->installButtons();
   }
 }
 

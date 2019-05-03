@@ -149,8 +149,9 @@ QVariant ComponentSignalListModel::headerData(int             section,
         default:
           break;
       }
-    } else if ((role == Qt::DecorationRole) && (section == COLUMN_ACTIONS)) {
-      return QIcon(":img/actions/settings.png");
+      //} else if ((role == Qt::DecorationRole) && (section == COLUMN_ACTIONS))
+      //{
+      //  return QIcon(":img/actions/settings.png");
     }
   } else if (orientation == Qt::Vertical) {
     if (role == Qt::DisplayRole) {

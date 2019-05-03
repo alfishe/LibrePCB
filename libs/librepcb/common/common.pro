@@ -127,6 +127,7 @@ SOURCES += \
     widgets/attributeunitcombobox.cpp \
     widgets/centeredcheckbox.cpp \
     widgets/comboboxdelegate.cpp \
+    widgets/editabletablewidget.cpp \
     widgets/graphicslayercombobox.cpp \
     widgets/patheditorwidget.cpp \
     widgets/plaintextedit.cpp \
@@ -249,6 +250,7 @@ HEADERS += \
     widgets/attributeunitcombobox.h \
     widgets/centeredcheckbox.h \
     widgets/comboboxdelegate.h \
+    widgets/editabletablewidget.h \
     widgets/graphicslayercombobox.h \
     widgets/patheditorwidget.h \
     widgets/plaintextedit.h \
