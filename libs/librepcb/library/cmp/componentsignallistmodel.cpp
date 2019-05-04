@@ -202,7 +202,7 @@ QVariant ComponentSignalListModel::data(const QModelIndex& index,
     case COLUMN_ACTIONS: {
       switch (role) {
         case Qt::EditRole:
-          return item ? item->getUuid().toStr() : QString();
+          return item ? item->getUuid().toStr() : QVariant();
         default:
           return QVariant();
       }
