@@ -49,6 +49,8 @@ DevicePadSignalMapModel::DevicePadSignalMapModel(QObject* parent) noexcept
 }
 
 DevicePadSignalMapModel::~DevicePadSignalMapModel() noexcept {
+  setPadSignalMap(nullptr);
+  setUndoStack(nullptr);
 }
 
 /*******************************************************************************
