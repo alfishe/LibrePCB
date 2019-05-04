@@ -34,8 +34,13 @@
 namespace librepcb {
 
 class UndoStack;
+class EditableTableWidget;
+class SortFilterProxyModel;
 
 namespace library {
+
+class ComponentSignalListModel;
+
 namespace editor {
 
 /*******************************************************************************
@@ -44,26 +49,9 @@ namespace editor {
 
 /**
  * @brief The ComponentSignalListEditorWidget class
- *
- * @author ubruhin
- * @date 2017-03-12
  */
-class ComponentSignalListEditorWidget final
-  : public QWidget,
-    private ComponentSignalList::IF_Observer {
+class ComponentSignalListEditorWidget final : public QWidget {
   Q_OBJECT
-
-private:  // Types
-  enum Column {
-    COLUMN_NAME = 0,
-    // COLUMN_ROLE,
-    COLUMN_ISREQUIRED,
-    // COLUMN_ISNEGATED,
-    // COLUMN_ISCLOCK,
-    COLUMN_FORCEDNETNAME,
-    COLUMN_BUTTONS,
-    _COLUMN_COUNT
-  };
 
 public:
   // Constructors / Destructor
@@ -79,60 +67,10 @@ public:
   ComponentSignalListEditorWidget& operator       =(
       const ComponentSignalListEditorWidget& rhs) = delete;
 
-private:  // Slots
-  void currentCellChanged(int currentRow, int currentColumn, int previousRow,
-                          int previousColumn) noexcept;
-  void tableCellChanged(int row, int column) noexcept;
-  // void signalRoleChanged(const SignalRole& role) noexcept;
-  void isRequiredChanged(bool checked) noexcept;
-  // void isNegatedChanged(bool checked) noexcept;
-  // void isClockChanged(bool checked) noexcept;
-  void btnAddRemoveClicked() noexcept;
-
-private:  // Observer
-  void listObjectAdded(
-      const ComponentSignalList& list, int newIndex,
-      const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
-  void listObjectRemoved(
-      const ComponentSignalList& list, int oldIndex,
-      const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
-
-private:  // Methods
-  void updateTable() noexcept;
-  void setTableRowContent(int row, const tl::optional<Uuid>& uuid,
-                          const QString&                   name,
-                          /*const SignalRole& role,*/ bool required,
-                          /*bool negated,
-bool clock,*/ const QString& forcedNetName) noexcept;
-  void addSignal(
-      const QString& name, /*const SignalRole& role,*/ bool required,
-      /*bool negated, bool clock,*/ const QString& forcedNetName) noexcept;
-  void removeSignal(const Uuid& uuid) noexcept;
-  bool setName(const Uuid& uuid, const QString& name) noexcept;
-  // void setRole(const Uuid& uuid, const SignalRole& role) noexcept;
-  void setIsRequired(const Uuid& uuid, bool required) noexcept;
-  // void setIsNegated(const Uuid& uuid, bool negated) noexcept;
-  // void setIsClock(const Uuid& uuid, bool clock) noexcept;
-  void setForcedNetName(const Uuid& uuid, const QString& netname) noexcept;
-  int  getRowOfTableCellWidget(QObject* obj) const noexcept;
-  tl::optional<Uuid> getUuidOfRow(int row) const noexcept;
-  CircuitIdentifier  validateNameOrThrow(const QString& name) const;
-  static QString     cleanForcedNetName(const QString& name) noexcept;
-
-  // row index <-> signal index conversion methods
-  int  newSignalRow() const noexcept { return mSignalList->count(); }
-  int  indexToRow(int index) const noexcept { return index; }
-  int  rowToIndex(int row) const noexcept { return row; }
-  bool isExistingSignalRow(int row) const noexcept {
-    return row >= 0 && row < mSignalList->count();
-  }
-  bool isNewSignalRow(int row) const noexcept { return row == newSignalRow(); }
-
-private:  // Data
-  QTableWidget*        mTable;
-  UndoStack*           mUndoStack;
-  ComponentSignalList* mSignalList;
-  tl::optional<Uuid>   mSelectedSignal;
+private:
+  QScopedPointer<EditableTableWidget>      mView;
+  QScopedPointer<ComponentSignalListModel> mModel;
+  QScopedPointer<SortFilterProxyModel>     mProxy;
 };
 
 /*******************************************************************************
