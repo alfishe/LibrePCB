@@ -45,28 +45,71 @@ EditableTableWidget::~EditableTableWidget() noexcept {
  *  Inherited
  ******************************************************************************/
 
-void EditableTableWidget::setModel(QAbstractItemModel* model) {
-  qDebug() << "model";
-  QTableView::setModel(model);
-}
-
-void EditableTableWidget::installButtons() {
+void EditableTableWidget::reset() {
+  QTableView::reset();
   if (model()) {
-    for (int i = 0; i < model()->rowCount() - 1; ++i) {
-      int size = rowHeight(i);
-      QToolButton* btn = new QToolButton();
-      btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-      btn->setFixedSize(size, size);
-      btn->setIcon(QIcon(":/img/actions/minus.png"));
-      btn->setIconSize(QSize(size - 6, size - 6));
-      setIndexWidget(model()->index(i, model()->columnCount() - 1), btn);
+    for (int i = 0; i < model()->rowCount(); ++i) {
+      installButtons(i);
     }
   }
 }
 
 void EditableTableWidget::rowsInserted(const QModelIndex& parent, int start,
                                        int end) {
-  qDebug() << start << end;
+  Q_UNUSED(parent);
+  for (int i = start; i <= end; ++i) {
+    installButtons(i);
+  }
+}
+
+/*******************************************************************************
+ *  Private Methods
+ ******************************************************************************/
+
+void EditableTableWidget::installButtons(int row) noexcept {
+  if (!model()) {
+    return;
+  }
+
+  QModelIndex index = model()->index(row, model()->columnCount() - 1);
+  if (!indexWidget(index)) {
+    QWidget* widget = new QWidget();
+    widget->setContentsMargins(0, 0, 0, 0);
+    QHBoxLayout* layout = new QHBoxLayout(widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    int size = rowHeight(row);
+    foreach (const QString& tag, index.data(Qt::EditRole).toStringList()) {
+      QToolButton* btn = new QToolButton();
+      btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+      btn->setFixedSize(size, size);
+      if (tag == "add") {
+        btn->setIcon(QIcon(":/img/actions/add.png"));
+      } else if (tag == "remove") {
+        btn->setIcon(QIcon(":/img/actions/minus.png"));
+      } else if (tag == "edit") {
+        btn->setIcon(QIcon(":/img/actions/edit.png"));
+      } else if (tag == "up") {
+        btn->setIcon(QIcon(":/img/actions/up.png"));
+      } else if (tag == "down") {
+        btn->setIcon(QIcon(":/img/actions/down.png"));
+      }
+      btn->setIconSize(QSize(size - 4, size - 4));
+      btn->setProperty("tag", tag);
+      btn->setProperty("userData", index.data(Qt::UserRole));
+      connect(btn, &QToolButton::clicked, this,
+              &EditableTableWidget::buttonClickedHandler);
+      layout->addWidget(btn);
+    }
+    setIndexWidget(index, widget);
+  }
+}
+
+void EditableTableWidget::buttonClickedHandler() noexcept {
+  QToolButton* btn      = static_cast<QToolButton*>(sender());
+  QString      tag      = btn->property("tag").toString();
+  QVariant     userData = btn->property("userData");
+  emit         buttonClicked(tag, userData);
 }
 
 /*******************************************************************************

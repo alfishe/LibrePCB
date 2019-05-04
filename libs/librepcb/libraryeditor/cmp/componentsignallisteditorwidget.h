@@ -69,8 +69,8 @@ public:
 
 private:  // Data
   QScopedPointer<EditableTableWidget>      mView;
-  QScopedPointer<QSortFilterProxyModel>    mProxy;
   QScopedPointer<ComponentSignalListModel> mModel;
+  QScopedPointer<QSortFilterProxyModel>    mProxy;
 };
 
 /*******************************************************************************

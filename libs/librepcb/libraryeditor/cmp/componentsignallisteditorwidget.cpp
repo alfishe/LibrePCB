@@ -43,26 +43,44 @@ namespace editor {
 
 ComponentSignalListEditorWidget::ComponentSignalListEditorWidget(
     QWidget* parent) noexcept
-  : QWidget(parent), mView(new EditableTableWidget(this)), mModel() {
+  : QWidget(parent),
+    mView(new EditableTableWidget(this)),
+    mModel(new ComponentSignalListModel(this)),
+    mProxy(new SortFilterProxyModel(this)) {
+  mProxy->setSourceModel(mModel.data());
+  mView->setModel(mProxy.data());
   mView->setCornerButtonEnabled(false);
   mView->setSelectionBehavior(QAbstractItemView::SelectRows);
   mView->setSelectionMode(QAbstractItemView::SingleSelection);
-  // mView->setSortingEnabled(true);
   mView->setWordWrap(false);  // avoid too high cells due to word wrap
   mView->setAlternatingRowColors(true);
-
-  mView->setMouseTracking(true);
+  mView->horizontalHeader()->setMinimumSectionSize(5);
+  mView->horizontalHeader()->setSectionResizeMode(
+      ComponentSignalListModel::COLUMN_NAME, QHeaderView::Stretch);
+  mView->horizontalHeader()->setSectionResizeMode(
+      ComponentSignalListModel::COLUMN_ISREQUIRED,
+      QHeaderView::ResizeToContents);
+  mView->horizontalHeader()->setSectionResizeMode(
+      ComponentSignalListModel::COLUMN_FORCEDNETNAME, QHeaderView::Stretch);
+  mView->horizontalHeader()->setSectionResizeMode(
+      ComponentSignalListModel::COLUMN_ACTIONS, QHeaderView::ResizeToContents);
+  mView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+  mView->verticalHeader()->setMinimumSectionSize(10);
+  mView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  mView->sortByColumn(ComponentSignalListModel::COLUMN_NAME,
+                      Qt::AscendingOrder);
+  mView->setItemDelegateForColumn(ComponentSignalListModel::COLUMN_ACTIONS,
+                                  new ButtonDelegate());
 
   QVBoxLayout* layout = new QVBoxLayout(this);
   layout->setContentsMargins(0, 0, 0, 0);
   layout->addWidget(mView.data());
 
-  mProxy.reset(new SortFilterProxyModel(this));
-  mView->setModel(mProxy.data());
+  connect(mView.data(), &EditableTableWidget::buttonClicked, mModel.data(),
+          &ComponentSignalListModel::buttonClicked);
 }
 
 ComponentSignalListEditorWidget::~ComponentSignalListEditorWidget() noexcept {
-  setReferences(nullptr, nullptr);
 }
 
 /*******************************************************************************
@@ -71,47 +89,8 @@ ComponentSignalListEditorWidget::~ComponentSignalListEditorWidget() noexcept {
 
 void ComponentSignalListEditorWidget::setReferences(
     UndoStack* undoStack, ComponentSignalList* list) noexcept {
-  mProxy->setSourceModel(nullptr);
-  mModel.reset();
-
-  if (undoStack && list) {
-    mModel.reset(new ComponentSignalListModel(*list, *undoStack));
-    mProxy->setSourceModel(mModel.data());
-    mView->horizontalHeader()->setMinimumSectionSize(5);
-    mView->horizontalHeader()->setSectionResizeMode(
-        ComponentSignalListModel::COLUMN_NAME, QHeaderView::Stretch);
-    mView->horizontalHeader()->setSectionResizeMode(
-        ComponentSignalListModel::COLUMN_ISREQUIRED,
-        QHeaderView::ResizeToContents);
-    mView->horizontalHeader()->setSectionResizeMode(
-        ComponentSignalListModel::COLUMN_FORCEDNETNAME, QHeaderView::Stretch);
-    mView->horizontalHeader()->setSectionResizeMode(
-        ComponentSignalListModel::COLUMN_ACTIONS,
-        QHeaderView::ResizeToContents);
-    mView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    mView->verticalHeader()->setMinimumSectionSize(10);
-    mView->verticalHeader()->setSectionResizeMode(
-        QHeaderView::ResizeToContents);
-    mView->sortByColumn(ComponentSignalListModel::COLUMN_NAME,
-                        Qt::AscendingOrder);
-
-    mView->setItemDelegateForColumn(ComponentSignalListModel::COLUMN_ACTIONS,
-                                    new ButtonDelegate());
-
-    // mView->setColumnWidth(ComponentSignalListModel::COLUMN_ACTIONS,
-    // mView->rowHeight(0));
-
-    // for (int i = 0; i < mModel->rowCount(); ++i) {
-    //  QToolButton* btn = new QToolButton();
-    //  btn->setFixedSize(mView->rowHeight(i), mView->rowHeight(i));
-    //  btn->setIcon(QIcon(":img/actions/minus.png"));
-    //  mView->setIndexWidget(
-    //      mProxy->index(i, ComponentSignalListModel::COLUMN_ACTIONS), btn);
-    //}
-    // mView->resizeColumnToContents(ComponentSignalListModel::COLUMN_ACTIONS);
-
-    mView->installButtons();
-  }
+  mModel->setSignalList(list);
+  mModel->setUndoStack(undoStack);
 }
 
 /*******************************************************************************

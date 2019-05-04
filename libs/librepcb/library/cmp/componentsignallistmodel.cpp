@@ -39,28 +39,51 @@ namespace library {
  *  Constructors / Destructor
  ******************************************************************************/
 
-ComponentSignalListModel::ComponentSignalListModel(ComponentSignalList& list,
-                                                   UndoStack& undoStack,
-                                                   QObject*   parent) noexcept
+ComponentSignalListModel::ComponentSignalListModel(QObject* parent) noexcept
   : QAbstractTableModel(parent),
-    mSignalList(list),
-    mUndoStack(undoStack),
+    mSignalList(nullptr),
+    mUndoStack(nullptr),
     mNewName(),
     mNewIsRequired(false),
     mNewForcedNetName() {
-  mSignalList.registerObserver(this);
-  for (ComponentSignal& item : mSignalList) {
-    connect(&item, &ComponentSignal::edited, this,
-            &ComponentSignalListModel::signalEdited);
-  }
 }
 
 ComponentSignalListModel::~ComponentSignalListModel() noexcept {
-  for (ComponentSignal& item : mSignalList) {
-    disconnect(&item, &ComponentSignal::edited, this,
-               &ComponentSignalListModel::signalEdited);
+  setSignalList(nullptr);
+  setUndoStack(nullptr);
+}
+
+/*******************************************************************************
+ *  Setters
+ ******************************************************************************/
+
+void ComponentSignalListModel::setSignalList(
+    ComponentSignalList* list) noexcept {
+  emit beginResetModel();
+
+  if (mSignalList) {
+    for (ComponentSignal& item : *mSignalList) {
+      disconnect(&item, &ComponentSignal::edited, this,
+                 &ComponentSignalListModel::signalEdited);
+    }
+    mSignalList->unregisterObserver(this);
   }
-  mSignalList.unregisterObserver(this);
+
+  mSignalList = list;
+
+  if (mSignalList) {
+    mSignalList->registerObserver(this);
+    for (ComponentSignal& item : *mSignalList) {
+      connect(&item, &ComponentSignal::edited, this,
+              &ComponentSignalListModel::signalEdited);
+    }
+  }
+
+  emit endResetModel();
+}
+
+void ComponentSignalListModel::setUndoStack(UndoStack* stack) noexcept {
+  mUndoStack = stack;
 }
 
 /*******************************************************************************
@@ -68,8 +91,8 @@ ComponentSignalListModel::~ComponentSignalListModel() noexcept {
  ******************************************************************************/
 
 int ComponentSignalListModel::rowCount(const QModelIndex& parent) const {
-  if (!parent.isValid()) {
-    return mSignalList.count() + 1;
+  if (!parent.isValid() && mSignalList) {
+    return mSignalList->count() + 1;
   }
   return 0;
 }
@@ -83,53 +106,54 @@ int ComponentSignalListModel::columnCount(const QModelIndex& parent) const {
 
 QVariant ComponentSignalListModel::data(const QModelIndex& index,
                                         int                role) const {
-  if (index.isValid()) {
-    std::shared_ptr<ComponentSignal> item = mSignalList.value(index.row());
-    switch (index.column()) {
-      case COLUMN_NAME: {
-        switch (role) {
-          case Qt::DisplayRole:
-            return item ? Toolbox::stringOrNumberToQVariant(*item->getName())
-                        : mNewName;
-          case Qt::EditRole:
-            return item ? *item->getName() : mNewName;
-          default:
-            return QVariant();
-        }
-      }
-      case COLUMN_ISREQUIRED: {
-        bool required = item ? item->isRequired() : mNewIsRequired;
-        switch (role) {
-          case Qt::DisplayRole:
-            return required ? tr("Required") : tr("Optional");
-          case Qt::CheckStateRole:
-            return required ? Qt::Checked : Qt::Unchecked;
-          default:
-            return QVariant();
-        }
-      }
-      case COLUMN_FORCEDNETNAME: {
-        switch (role) {
-          case Qt::DisplayRole:
-          case Qt::EditRole:
-            return item ? item->getForcedNetName() : mNewForcedNetName;
-          default:
-            return QVariant();
-        }
-      }
-      case COLUMN_ACTIONS: {
-        switch (role) {
-          case Qt::EditRole:
-            if (item) {
-              return QStringList{"delete"};
-            } else {
-              return QStringList{"add"};
-            }
-          default:
-            return QVariant();
-        }
+  if (!index.isValid() || !mSignalList) {
+    return QVariant();
+  }
+  std::shared_ptr<ComponentSignal> item = mSignalList->value(index.row());
+  switch (index.column()) {
+    case COLUMN_NAME: {
+      QString name = item ? *item->getName() : mNewName;
+      switch (role) {
+        case Qt::DisplayRole:
+          return Toolbox::stringOrNumberToQVariant(name);
+        case Qt::EditRole:
+          return name;
+        default:
+          return QVariant();
       }
     }
+    case COLUMN_ISREQUIRED: {
+      bool required = item ? item->isRequired() : mNewIsRequired;
+      switch (role) {
+        case Qt::DisplayRole:
+          return required ? tr("Required") : tr("Optional");
+        case Qt::CheckStateRole:
+          return required ? Qt::Checked : Qt::Unchecked;
+        default:
+          return QVariant();
+      }
+    }
+    case COLUMN_FORCEDNETNAME: {
+      switch (role) {
+        case Qt::DisplayRole:
+        case Qt::EditRole:
+          return item ? item->getForcedNetName() : mNewForcedNetName;
+        default:
+          return QVariant();
+      }
+    }
+    case COLUMN_ACTIONS: {
+      switch (role) {
+        case Qt::UserRole:
+          return item ? item->getUuid().toStr() : QString();
+        case Qt::EditRole:
+          return item ? QStringList{"remove"} : QStringList{"add"};
+        default:
+          return QVariant();
+      }
+    }
+    default:
+      return QVariant();
   }
   return QVariant();
 }
@@ -143,20 +167,17 @@ QVariant ComponentSignalListModel::headerData(int             section,
         case COLUMN_NAME:
           return tr("Name");
         case COLUMN_ISREQUIRED:
-          return tr("Required");
+          return tr("Connection");
         case COLUMN_FORCEDNETNAME:
           return tr("Forced Net");
         default:
-          break;
+          return QVariant();
       }
-      //} else if ((role == Qt::DecorationRole) && (section == COLUMN_ACTIONS))
-      //{
-      //  return QIcon(":img/actions/settings.png");
     }
   } else if (orientation == Qt::Vertical) {
-    if (role == Qt::DisplayRole) {
-      std::shared_ptr<ComponentSignal> item = mSignalList.value(section);
-      return item ? item->getUuid().toStr() : tr("New:");
+    if (mSignalList && (role == Qt::DisplayRole)) {
+      std::shared_ptr<ComponentSignal> item = mSignalList->value(section);
+      return item ? item->getUuid().toStr().left(8) : tr("New:");
     } else if (role == Qt::TextAlignmentRole) {
       return QVariant(Qt::AlignRight | Qt::AlignVCenter);
     } else if (role == Qt::FontRole) {
@@ -182,8 +203,12 @@ Qt::ItemFlags ComponentSignalListModel::flags(const QModelIndex& index) const {
 
 bool ComponentSignalListModel::setData(const QModelIndex& index,
                                        const QVariant& value, int role) {
+  if (!mSignalList || !mUndoStack) {
+    return false;
+  }
+
   try {
-    std::shared_ptr<ComponentSignal> item = mSignalList.value(index.row());
+    std::shared_ptr<ComponentSignal> item = mSignalList->value(index.row());
     QScopedPointer<CmdComponentSignalEdit> cmd;
     if (item) {
       cmd.reset(new CmdComponentSignalEdit(*item));
@@ -208,17 +233,55 @@ bool ComponentSignalListModel::setData(const QModelIndex& index,
       } else {
         mNewForcedNetName = value.toString();
       }
+    } else {
+      return false;  // do not execute command!
     }
     if (cmd) {
-      mUndoStack.execCmd(cmd.take());
+      mUndoStack->execCmd(cmd.take());
+    } else {
+      emit dataChanged(index, index);
     }
-    emit dataChanged(index, index, {role});
     return true;
   } catch (const Exception& e) {
-    QMessageBox::critical(0, tr("Could not edit component signal"), e.getMsg());
+    QMessageBox::critical(0, tr("Error"), e.getMsg());
   }
   return false;
 }
+
+/*******************************************************************************
+ *  Slots
+ ******************************************************************************/
+
+void ComponentSignalListModel::buttonClicked(
+    const QString& tag, const QVariant& userData) noexcept {
+  if (!mSignalList || !mUndoStack) {
+    return;
+  }
+
+  try {
+    if (tag == "add") {
+      std::shared_ptr<ComponentSignal> sig = std::make_shared<ComponentSignal>(
+          Uuid::createRandom(), CircuitIdentifier(mNewName),
+          SignalRole::passive(), mNewForcedNetName, mNewIsRequired, false,
+          false);
+      mUndoStack->execCmd(new CmdComponentSignalInsert(*mSignalList, sig));
+      mNewName          = QString();
+      mNewIsRequired    = false;
+      mNewForcedNetName = QString();
+    } else if (tag == "remove") {
+      Uuid uuid = Uuid::fromString(userData.toString());
+      std::shared_ptr<ComponentSignal> sig = mSignalList->get(uuid);
+      mUndoStack->execCmd(
+          new CmdComponentSignalRemove(*mSignalList, sig.get()));
+    }
+  } catch (const Exception& e) {
+    QMessageBox::critical(0, tr("Error"), e.getMsg());
+  }
+}
+
+/*******************************************************************************
+ *  Private Methods
+ ******************************************************************************/
 
 void ComponentSignalListModel::listObjectAdded(
     const ComponentSignalList& list, int newIndex,
@@ -241,7 +304,8 @@ void ComponentSignalListModel::listObjectRemoved(
 }
 
 void ComponentSignalListModel::signalEdited() noexcept {
-  int row = mSignalList.indexOf(static_cast<ComponentSignal*>(sender()));
+  Q_ASSERT(mSignalList);
+  int row = mSignalList->indexOf(static_cast<ComponentSignal*>(sender()));
   if (row >= 0) {
     dataChanged(index(row, 0), index(row, _COLUMN_COUNT - 1));
   }

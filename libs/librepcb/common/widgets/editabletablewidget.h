@@ -48,8 +48,7 @@ public:
   virtual ~EditableTableWidget() noexcept;
 
   // Inherited
-  virtual void setModel(QAbstractItemModel* model) override;
-  void installButtons();
+  virtual void reset() override;
 
   // Operator Overloadings
   EditableTableWidget& operator=(const EditableTableWidget& rhs) = delete;
@@ -58,7 +57,12 @@ protected:
   virtual void rowsInserted(const QModelIndex& parent, int start,
                             int end) override;
 
+signals:
+  void buttonClicked(const QString& tag, const QVariant& userData);
+
 private:
+  void installButtons(int row) noexcept;
+  void buttonClickedHandler() noexcept;
 };
 
 /*******************************************************************************

@@ -60,9 +60,12 @@ public:
   // Constructors / Destructor
   ComponentSignalListModel() = delete;
   ComponentSignalListModel(const ComponentSignalListModel& other) noexcept;
-  ComponentSignalListModel(ComponentSignalList& list, UndoStack& undoStack,
-                           QObject* parent = nullptr) noexcept;
+  explicit ComponentSignalListModel(QObject* parent = nullptr) noexcept;
   ~ComponentSignalListModel() noexcept;
+
+  // Setters
+  void setSignalList(ComponentSignalList* list) noexcept;
+  void setUndoStack(UndoStack* stack) noexcept;
 
   // Inherited from QAbstractItemModel
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -75,22 +78,25 @@ public:
   bool          setData(const QModelIndex& index, const QVariant& value,
                         int role = Qt::EditRole) override;
 
+  // Slots
+  void buttonClicked(const QString& tag, const QVariant& userData) noexcept;
+
   // Operator Overloadings
   ComponentSignalListModel& operator=(
       const ComponentSignalListModel& rhs) noexcept;
 
 private:
-  virtual void listObjectAdded(
+  void listObjectAdded(
       const ComponentSignalList& list, int newIndex,
       const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
-  virtual void listObjectRemoved(
+  void listObjectRemoved(
       const ComponentSignalList& list, int oldIndex,
       const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
   void signalEdited() noexcept;
 
 private:  // Data
-  ComponentSignalList& mSignalList;
-  UndoStack&           mUndoStack;
+  ComponentSignalList* mSignalList;
+  UndoStack*           mUndoStack;
   QString              mNewName;
   bool                 mNewIsRequired;
   QString              mNewForcedNetName;
