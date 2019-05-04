@@ -36,12 +36,16 @@
 namespace librepcb {
 
 class UndoStack;
+class SortFilterProxyModel;
 
 namespace workspace {
 class Workspace;
 }
 
 namespace library {
+
+class DevicePadSignalMapModel;
+
 namespace editor {
 
 /*******************************************************************************
@@ -50,16 +54,9 @@ namespace editor {
 
 /**
  * @brief The PadSignalMapEditorWidget class
- *
- * @author ubruhin
- * @date 2017-03-25
  */
-class PadSignalMapEditorWidget final : public QWidget,
-                                       private DevicePadSignalMap::IF_Observer {
+class PadSignalMapEditorWidget final : public QWidget {
   Q_OBJECT
-
-private:  // Types
-  enum Column { COLUMN_PAD = 0, COLUMN_SIGNAL, _COLUMN_COUNT };
 
 public:
   // Constructors / Destructor
@@ -76,35 +73,10 @@ public:
   PadSignalMapEditorWidget& operator=(const PadSignalMapEditorWidget& rhs) =
       delete;
 
-private:  // Slots
-  void currentCellChanged(int currentRow, int currentColumn, int previousRow,
-                          int previousColumn) noexcept;
-  void componentSignalChanged(int index) noexcept;
-
-private:  // Observer
-  void listObjectAdded(
-      const DevicePadSignalMap& list, int newIndex,
-      const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept override;
-  void listObjectRemoved(
-      const DevicePadSignalMap& list, int oldIndex,
-      const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept override;
-
-private:  // Methods
-  void updateTable() noexcept;
-  void setTableRowContent(int row, const Uuid& padUuid, const QString& padName,
-                          const tl::optional<Uuid>& signalUuid) noexcept;
-  void setComponentSignal(const Uuid&               pad,
-                          const tl::optional<Uuid>& signal) noexcept;
-  tl::optional<Uuid> getPadUuidOfTableCellWidget(QObject* obj) const noexcept;
-  tl::optional<Uuid> getPadUuidOfRow(int row) const noexcept;
-
-private:  // Data
-  QTableWidget*       mTable;
-  UndoStack*          mUndoStack;
-  DevicePadSignalMap* mPadSignalMap;
-  PackagePadList      mPads;
-  ComponentSignalList mSignals;
-  tl::optional<Uuid>  mSelectedPad;
+private:
+  QScopedPointer<QTableView>              mView;
+  QScopedPointer<DevicePadSignalMapModel> mModel;
+  QScopedPointer<SortFilterProxyModel>    mProxy;
 };
 
 /*******************************************************************************
