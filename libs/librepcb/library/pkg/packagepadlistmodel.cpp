@@ -199,7 +199,7 @@ QVariant PackagePadListModel::headerData(int             section,
       return item ? item->getUuid().toStr().left(8) : tr("New:");
     } else if (mPadList && (role == Qt::ToolTipRole)) {
       std::shared_ptr<PackagePad> item = mPadList->value(section);
-      return item ? item->getUuid().toStr() : tr("Add a new signal");
+      return item ? item->getUuid().toStr() : tr("Add a new pad");
     } else if (role == Qt::TextAlignmentRole) {
       return QVariant(Qt::AlignRight | Qt::AlignVCenter);
     } else if (role == Qt::FontRole) {
