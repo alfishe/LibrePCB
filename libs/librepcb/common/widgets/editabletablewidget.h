@@ -50,6 +50,7 @@ public:
   virtual ~EditableTableWidget() noexcept;
 
   // Setters
+  void setShowCopyButton(bool show) noexcept { mShowCopyButton = show; }
   void setShowEditButton(bool show) noexcept { mShowEditButton = show; }
   void setShowMoveButtons(bool show) noexcept { mShowMoveButtons = show; }
 
@@ -60,12 +61,16 @@ public:
   EditableTableWidget& operator=(const EditableTableWidget& rhs) = delete;
 
 protected:
+  virtual void currentChanged(const QModelIndex& current,
+                              const QModelIndex& previous) override;
   virtual void rowsInserted(const QModelIndex& parent, int start,
                             int end) override;
 
 signals:
+  void currentRowChanged(int row);
   void btnAddClicked(const QVariant& data);
   void btnRemoveClicked(const QVariant& data);
+  void btnCopyClicked(const QVariant& data);
   void btnEditClicked(const QVariant& data);
   void btnMoveUpClicked(const QVariant& data);
   void btnMoveDownClicked(const QVariant& data);
@@ -76,6 +81,7 @@ private:
                             int width, int height, const QVariant& data,
                             Signal clickedSignal) noexcept;
 
+  bool mShowCopyButton;
   bool mShowEditButton;
   bool mShowMoveButtons;
 };

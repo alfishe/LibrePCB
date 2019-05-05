@@ -35,7 +35,10 @@ namespace librepcb {
  ******************************************************************************/
 
 EditableTableWidget::EditableTableWidget(QWidget* parent) noexcept
-  : QTableView(parent), mShowEditButton(false), mShowMoveButtons(false) {
+  : QTableView(parent),
+    mShowCopyButton(false),
+    mShowEditButton(false),
+    mShowMoveButtons(false) {
   // set reasonable default values - they can still be changed afterwards
   setAlternatingRowColors(true);                         // increase readability
   setCornerButtonEnabled(false);                         // not needed
@@ -61,6 +64,15 @@ void EditableTableWidget::reset() {
     for (int i = 0; i < model()->rowCount(); ++i) {
       installButtons(i);
     }
+  }
+}
+
+void EditableTableWidget::currentChanged(const QModelIndex& current,
+                                         const QModelIndex& previous) {
+  QTableView::currentChanged(current, previous);
+  if (current.isValid() &&
+      (!previous.isValid() || (previous.row() != current.row()))) {
+    emit currentRowChanged(current.row());
   }
 }
 
@@ -96,6 +108,11 @@ void EditableTableWidget::installButtons(int row) noexcept {
                                        tr("Edit"), size, size, data,
                                        &EditableTableWidget::btnEditClicked));
       }
+      if (mShowCopyButton) {
+        layout->addWidget(createButton(QIcon(":/img/actions/copy.png"),
+                                       tr("Copy"), size, size, data,
+                                       &EditableTableWidget::btnCopyClicked));
+      }
       if (mShowMoveButtons) {
         layout->addWidget(createButton(QIcon(":/img/actions/up.png"),
                                        tr("Move up"), size, size, data,
@@ -110,6 +127,7 @@ void EditableTableWidget::installButtons(int row) noexcept {
     } else {
       int width = size;
       if (mShowEditButton) width += size;
+      if (mShowCopyButton) width += size;
       if (mShowMoveButtons) width += 2 * size;
       layout->addWidget(createButton(QIcon(":/img/actions/add.png"), tr("Add"),
                                      width, size, data,
