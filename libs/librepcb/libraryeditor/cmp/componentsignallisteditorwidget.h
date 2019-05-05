@@ -48,9 +48,7 @@ namespace editor {
  * @author ubruhin
  * @date 2017-03-12
  */
-class ComponentSignalListEditorWidget final
-  : public QWidget,
-    private ComponentSignalList::IF_Observer {
+class ComponentSignalListEditorWidget final : public QWidget {
   Q_OBJECT
 
 private:  // Types
@@ -90,13 +88,12 @@ private:  // Slots
   void btnAddRemoveClicked() noexcept;
 
 private:  // Observer
-  void listObjectAdded(
-      const ComponentSignalList& list, int newIndex,
-      const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
-  void listObjectRemoved(
-      const ComponentSignalList& list, int oldIndex,
-      const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
-
+          // void listObjectAdded(
+          //    const ComponentSignalList& list, int newIndex,
+          //    const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
+          // void listObjectRemoved(
+          //    const ComponentSignalList& list, int oldIndex,
+          //    const std::shared_ptr<ComponentSignal>& ptr) noexcept override;
 private:  // Methods
   void updateTable() noexcept;
   void setTableRowContent(int row, const tl::optional<Uuid>& uuid,

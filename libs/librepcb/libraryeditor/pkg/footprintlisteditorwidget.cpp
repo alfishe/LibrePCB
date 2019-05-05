@@ -71,7 +71,7 @@ FootprintListEditorWidget::FootprintListEditorWidget(QWidget* parent) noexcept
 }
 
 FootprintListEditorWidget::~FootprintListEditorWidget() noexcept {
-  if (mFootprintList) mFootprintList->unregisterObserver(this);
+  // if (mFootprintList) mFootprintList->unregisterObserver(this);
 }
 
 /*******************************************************************************
@@ -83,7 +83,7 @@ void FootprintListEditorWidget::setReferences(FootprintList& list,
   mFootprintList     = &list;
   mUndoStack         = &stack;
   mSelectedFootprint = tl::nullopt;
-  mFootprintList->registerObserver(this);
+  // mFootprintList->registerObserver(this);
   updateTable();
 }
 
@@ -405,7 +405,7 @@ ElementName FootprintListEditorWidget::validateNameOrThrow(
  *  Observer Methods
  ******************************************************************************/
 
-void FootprintListEditorWidget::listObjectAdded(
+/*void FootprintListEditorWidget::listObjectAdded(
     const FootprintList& list, int newIndex,
     const std::shared_ptr<Footprint>& ptr) noexcept {
   Q_ASSERT(&list == mFootprintList);
@@ -423,7 +423,7 @@ void FootprintListEditorWidget::listObjectRemoved(
   Q_UNUSED(oldIndex);
   Q_UNUSED(ptr);
   updateTable(mSelectedFootprint);
-}
+}*/
 
 /*******************************************************************************
  *  End of File

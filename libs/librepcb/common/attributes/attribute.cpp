@@ -72,6 +72,13 @@ QString Attribute::getValueTr(bool showUnit) const noexcept {
  *  Setters
  ******************************************************************************/
 
+void Attribute::setKey(const AttributeKey& key) noexcept {
+  mKey = key;
+
+  onKeyChanged.notify(*this, key);
+  onEdited.notify(*this);
+}
+
 void Attribute::setTypeValueUnit(const AttributeType& type,
                                  const QString&       value,
                                  const AttributeUnit* unit) {
@@ -84,6 +91,9 @@ void Attribute::setTypeValueUnit(const AttributeType& type,
   mType  = &type;
   mValue = value;
   mUnit  = unit;
+
+  onTypeValueUnitChanged.notify(*this, type, value, unit);
+  onEdited.notify(*this);
 }
 
 /*******************************************************************************

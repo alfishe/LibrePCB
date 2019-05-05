@@ -44,20 +44,20 @@ Symbol::Symbol(const Uuid& uuid, const Version& version, const QString& author,
                const QString& keywords_en_US)
   : LibraryElement(getShortElementName(), getLongElementName(), uuid, version,
                    author, name_en_US, description_en_US, keywords_en_US),
-    mPins(this),
-    mPolygons(this),
-    mCircles(this),
-    mTexts(this),
+    mPins(),
+    mPolygons(),
+    mCircles(),
+    mTexts(),
     mRegisteredGraphicsItem(nullptr) {
 }
 
 Symbol::Symbol(std::unique_ptr<TransactionalDirectory> directory)
   : LibraryElement(std::move(directory), getShortElementName(),
                    getLongElementName()),
-    mPins(this),
-    mPolygons(this),
-    mCircles(this),
-    mTexts(this),
+    mPins(),
+    mPolygons(),
+    mCircles(),
+    mTexts(),
     mRegisteredGraphicsItem(nullptr) {
   mPins.loadFromDomElement(mLoadingFileDocument);      // can throw
   mPolygons.loadFromDomElement(mLoadingFileDocument);  // can throw
@@ -93,7 +93,7 @@ void Symbol::unregisterGraphicsItem(SymbolGraphicsItem& item) noexcept {
  *  Private Methods
  ******************************************************************************/
 
-void Symbol::listObjectAdded(const SymbolPinList& list, int newIndex,
+/*void Symbol::listObjectAdded(const SymbolPinList& list, int newIndex,
                              const std::shared_ptr<SymbolPin>& ptr) noexcept {
   Q_UNUSED(newIndex);
   Q_ASSERT(&list == &mPins);
@@ -147,7 +147,7 @@ void Symbol::listObjectRemoved(const TextList& list, int oldIndex,
   Q_UNUSED(oldIndex);
   Q_ASSERT(&list == &mTexts);
   if (mRegisteredGraphicsItem) mRegisteredGraphicsItem->removeText(*ptr);
-}
+}*/
 
 void Symbol::serialize(SExpression& root) const {
   LibraryElement::serialize(root);

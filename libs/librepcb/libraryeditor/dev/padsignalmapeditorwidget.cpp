@@ -81,7 +81,7 @@ PadSignalMapEditorWidget::~PadSignalMapEditorWidget() noexcept {
 void PadSignalMapEditorWidget::setReferences(UndoStack*          undoStack,
                                              DevicePadSignalMap* map) noexcept {
   if (mPadSignalMap) {
-    mPadSignalMap->unregisterObserver(this);
+    // mPadSignalMap->unregisterObserver(this);
     for (const DevicePadSignalMapItem& item : *mPadSignalMap) {
       disconnect(&item, &DevicePadSignalMapItem::signalUuidChanged, this,
                  &PadSignalMapEditorWidget::updateTable);
@@ -90,7 +90,7 @@ void PadSignalMapEditorWidget::setReferences(UndoStack*          undoStack,
   mUndoStack    = undoStack;
   mPadSignalMap = map;
   if (mPadSignalMap) {
-    mPadSignalMap->registerObserver(this);
+    // mPadSignalMap->registerObserver(this);
     for (const DevicePadSignalMapItem& item : *mPadSignalMap) {
       connect(&item, &DevicePadSignalMapItem::signalUuidChanged, this,
               &PadSignalMapEditorWidget::updateTable);
@@ -139,7 +139,7 @@ void PadSignalMapEditorWidget::componentSignalChanged(int index) noexcept {
  *  Observer
  ******************************************************************************/
 
-void PadSignalMapEditorWidget::listObjectAdded(
+/*void PadSignalMapEditorWidget::listObjectAdded(
     const DevicePadSignalMap& list, int newIndex,
     const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept {
   Q_UNUSED(list);
@@ -159,7 +159,7 @@ void PadSignalMapEditorWidget::listObjectRemoved(
   disconnect(ptr.get(), &DevicePadSignalMapItem::signalUuidChanged, this,
              &PadSignalMapEditorWidget::updateTable);
   updateTable();
-}
+}*/
 
 /*******************************************************************************
  *  Private Methods

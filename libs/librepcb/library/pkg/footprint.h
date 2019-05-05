@@ -58,12 +58,7 @@ class FootprintGraphicsItem;
  *  - Footprint pads (neither adding nor removing pads is allowed)
  *    - UUID
  */
-class Footprint final : public SerializableObject,
-                        private FootprintPadList::IF_Observer,
-                        private PolygonList::IF_Observer,
-                        private CircleList::IF_Observer,
-                        private StrokeTextList::IF_Observer,
-                        private HoleList::IF_Observer {
+class Footprint final : public SerializableObject {
   Q_DECLARE_TR_FUNCTIONS(Footprint)
 
 public:
@@ -113,32 +108,38 @@ public:
   }
   Footprint& operator=(const Footprint& rhs) noexcept;
 
-private:  // Methods
-  void listObjectAdded(
-      const FootprintPadList& list, int newIndex,
-      const std::shared_ptr<FootprintPad>& ptr) noexcept override;
-  void listObjectAdded(const PolygonList& list, int newIndex,
-                       const std::shared_ptr<Polygon>& ptr) noexcept override;
-  void listObjectAdded(const CircleList& list, int newIndex,
-                       const std::shared_ptr<Circle>& ptr) noexcept override;
-  void listObjectAdded(
-      const StrokeTextList& list, int newIndex,
-      const std::shared_ptr<StrokeText>& ptr) noexcept override;
-  void listObjectAdded(const HoleList& list, int newIndex,
-                       const std::shared_ptr<Hole>& ptr) noexcept override;
-  void listObjectRemoved(
-      const FootprintPadList& list, int oldIndex,
-      const std::shared_ptr<FootprintPad>& ptr) noexcept override;
-  void listObjectRemoved(const PolygonList& list, int oldIndex,
-                         const std::shared_ptr<Polygon>& ptr) noexcept override;
-  void listObjectRemoved(const CircleList& list, int oldIndex,
-                         const std::shared_ptr<Circle>& ptr) noexcept override;
-  void listObjectRemoved(
-      const StrokeTextList& list, int oldIndex,
-      const std::shared_ptr<StrokeText>& ptr) noexcept override;
-  void listObjectRemoved(const HoleList& list, int oldIndex,
-                         const std::shared_ptr<Hole>& ptr) noexcept override;
-
+private
+  :  // Methods
+     // void listObjectAdded(
+     //    const FootprintPadList& list, int newIndex,
+     //    const std::shared_ptr<const FootprintPad>& ptr) noexcept override;
+     // void listObjectAdded(const PolygonList& list, int newIndex,
+     //                     const std::shared_ptr<const Polygon>& ptr) noexcept
+     //                     override;
+     // void listObjectAdded(const CircleList& list, int newIndex,
+     //                     const std::shared_ptr<const Circle>& ptr) noexcept
+     //                     override;
+     // void listObjectAdded(
+     //    const StrokeTextList& list, int newIndex,
+     //    const std::shared_ptr<const StrokeText>& ptr) noexcept override;
+     // void listObjectAdded(const HoleList& list, int newIndex,
+     //                     const std::shared_ptr<const Hole>& ptr) noexcept
+     //                     override;
+     // void listObjectRemoved(
+     //    const FootprintPadList& list, int oldIndex,
+     //    const std::shared_ptr<const FootprintPad>& ptr) noexcept override;
+     // void listObjectRemoved(const PolygonList& list, int oldIndex,
+     //                       const std::shared_ptr<const Polygon>& ptr)
+     //                       noexcept override;
+     // void listObjectRemoved(const CircleList& list, int oldIndex,
+     //                       const std::shared_ptr<const Circle>& ptr) noexcept
+     //                       override;
+     // void listObjectRemoved(
+     //    const StrokeTextList& list, int oldIndex,
+     //    const std::shared_ptr<const StrokeText>& ptr) noexcept override;
+     // void listObjectRemoved(const HoleList& list, int oldIndex,
+     //                       const std::shared_ptr<const Hole>& ptr) noexcept
+     //                       override;
 private:  // Data
   Uuid                    mUuid;
   LocalizedNameMap        mNames;

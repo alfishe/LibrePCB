@@ -110,7 +110,7 @@ ComponentSignalListEditorWidget::~ComponentSignalListEditorWidget() noexcept {
 void ComponentSignalListEditorWidget::setReferences(
     UndoStack* undoStack, ComponentSignalList* list) noexcept {
   if (mSignalList) {
-    mSignalList->unregisterObserver(this);
+    // mSignalList->unregisterObserver(this);
     for (const ComponentSignal& signal : *mSignalList) {
       disconnect(&signal, &ComponentSignal::edited, this,
                  &ComponentSignalListEditorWidget::updateTable);
@@ -120,7 +120,7 @@ void ComponentSignalListEditorWidget::setReferences(
   mSignalList     = list;
   mSelectedSignal = tl::nullopt;
   if (mSignalList) {
-    mSignalList->registerObserver(this);
+    // mSignalList->registerObserver(this);
     for (const ComponentSignal& signal : *mSignalList) {
       connect(&signal, &ComponentSignal::edited, this,
               &ComponentSignalListEditorWidget::updateTable);
@@ -241,7 +241,7 @@ void ComponentSignalListEditorWidget::btnAddRemoveClicked() noexcept {
  *  Observer
  ******************************************************************************/
 
-void ComponentSignalListEditorWidget::listObjectAdded(
+/*void ComponentSignalListEditorWidget::listObjectAdded(
     const ComponentSignalList& list, int newIndex,
     const std::shared_ptr<ComponentSignal>& ptr) noexcept {
   Q_UNUSED(list);
@@ -261,7 +261,7 @@ void ComponentSignalListEditorWidget::listObjectRemoved(
   disconnect(ptr.get(), &ComponentSignal::edited, this,
              &ComponentSignalListEditorWidget::updateTable);
   updateTable();
-}
+}*/
 
 /*******************************************************************************
  *  Private Methods

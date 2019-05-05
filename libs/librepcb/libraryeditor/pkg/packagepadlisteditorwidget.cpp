@@ -71,7 +71,7 @@ PackagePadListEditorWidget::PackagePadListEditorWidget(QWidget* parent) noexcept
 }
 
 PackagePadListEditorWidget::~PackagePadListEditorWidget() noexcept {
-  if (mPadList) mPadList->unregisterObserver(this);
+  // if (mPadList) mPadList->unregisterObserver(this);
 }
 
 /*******************************************************************************
@@ -80,11 +80,11 @@ PackagePadListEditorWidget::~PackagePadListEditorWidget() noexcept {
 
 void PackagePadListEditorWidget::setReferences(PackagePadList& list,
                                                UndoStack*      stack) noexcept {
-  if (mPadList) mPadList->unregisterObserver(this);
+  // if (mPadList) mPadList->unregisterObserver(this);
   mPadList     = &list;
   mUndoStack   = stack;
   mSelectedPad = tl::nullopt;
-  mPadList->registerObserver(this);
+  // mPadList->registerObserver(this);
   updateTable();
 }
 
@@ -298,7 +298,7 @@ QString PackagePadListEditorWidget::getNextPadNameProposal() const noexcept {
  *  Observer Methods
  ******************************************************************************/
 
-void PackagePadListEditorWidget::listObjectAdded(
+/*void PackagePadListEditorWidget::listObjectAdded(
     const PackagePadList& list, int newIndex,
     const std::shared_ptr<PackagePad>& ptr) noexcept {
   Q_ASSERT(&list == mPadList);
@@ -316,7 +316,7 @@ void PackagePadListEditorWidget::listObjectRemoved(
   Q_UNUSED(oldIndex);
   Q_UNUSED(ptr);
   updateTable(mSelectedPad);
-}
+}*/
 
 /*******************************************************************************
  *  End of File

@@ -48,8 +48,7 @@ namespace editor {
  * @author ubruhin
  * @date 2017-03-27
  */
-class PackagePadListEditorWidget final : public QWidget,
-                                         private PackagePadList::IF_Observer {
+class PackagePadListEditorWidget final : public QWidget {
   Q_OBJECT
 
 private:  // Types
@@ -97,12 +96,12 @@ private:  // Methods
   bool isNewPadRow(int row) const noexcept { return row == newPadRow(); }
 
   // Observer Methods
-  void listObjectAdded(
-      const PackagePadList& list, int newIndex,
-      const std::shared_ptr<PackagePad>& ptr) noexcept override;
-  void listObjectRemoved(
-      const PackagePadList& list, int oldIndex,
-      const std::shared_ptr<PackagePad>& ptr) noexcept override;
+  // void listObjectAdded(
+  //    const PackagePadList& list, int newIndex,
+  //    const std::shared_ptr<PackagePad>& ptr) noexcept override;
+  // void listObjectRemoved(
+  //    const PackagePadList& list, int oldIndex,
+  //    const std::shared_ptr<PackagePad>& ptr) noexcept override;
 
 private:  // Data
   QTableWidget*      mTable;

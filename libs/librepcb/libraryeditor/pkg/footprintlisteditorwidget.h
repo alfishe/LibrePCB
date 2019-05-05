@@ -48,8 +48,7 @@ namespace editor {
  * @author ubruhin
  * @date 2017-05-27
  */
-class FootprintListEditorWidget final : public QWidget,
-                                        private FootprintList::IF_Observer {
+class FootprintListEditorWidget final : public QWidget {
   Q_OBJECT
 
 private:  // Types
@@ -109,11 +108,12 @@ private:  // Methods
   }
 
   // Observer Methods
-  void listObjectAdded(const FootprintList& list, int newIndex,
-                       const std::shared_ptr<Footprint>& ptr) noexcept override;
-  void listObjectRemoved(
-      const FootprintList& list, int oldIndex,
-      const std::shared_ptr<Footprint>& ptr) noexcept override;
+  // void listObjectAdded(const FootprintList& list, int newIndex,
+  //                     const std::shared_ptr<Footprint>& ptr) noexcept
+  //                     override;
+  // void listObjectRemoved(
+  //    const FootprintList& list, int oldIndex,
+  //    const std::shared_ptr<Footprint>& ptr) noexcept override;
 
 private:  // Data
   QTableWidget*      mTable;

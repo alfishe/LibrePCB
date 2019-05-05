@@ -55,13 +55,11 @@ namespace library {
  *    - Symbol UUID
  *    - Pin-signal-mapping
  */
-class ComponentSymbolVariant final
-  : public QObject,
-    public SerializableObject,
-    private ComponentSymbolVariantItemList::IF_Observer {
-  Q_OBJECT
-
+class ComponentSymbolVariant final : public SerializableObject {
 public:
+  // Notifications
+  Notification<const ComponentSymbolVariant&> onEdited;
+
   // Constructors / Destructor
   ComponentSymbolVariant() = delete;
   ComponentSymbolVariant(const ComponentSymbolVariant& other) noexcept;
@@ -109,17 +107,6 @@ public:
     return !(*this == rhs);
   }
   ComponentSymbolVariant& operator=(const ComponentSymbolVariant& rhs) noexcept;
-
-signals:
-  void edited();
-
-private:  // Methods
-  void listObjectAdded(
-      const ComponentSymbolVariantItemList& list, int newIndex,
-      const std::shared_ptr<ComponentSymbolVariantItem>& ptr) noexcept override;
-  void listObjectRemoved(
-      const ComponentSymbolVariantItemList& list, int oldIndex,
-      const std::shared_ptr<ComponentSymbolVariantItem>& ptr) noexcept override;
 
 private:  // Data
   Uuid                           mUuid;

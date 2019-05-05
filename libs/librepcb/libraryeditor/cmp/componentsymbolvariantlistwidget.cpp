@@ -99,22 +99,22 @@ void ComponentSymbolVariantListWidget::setReferences(
     UndoStack* undoStack, ComponentSymbolVariantList* variants,
     IF_ComponentSymbolVariantEditorProvider* editorProvider) noexcept {
   if (mVariantList) {
-    mVariantList->unregisterObserver(this);
-    for (const ComponentSymbolVariant& variant : *mVariantList) {
-      disconnect(&variant, &ComponentSymbolVariant::edited, this,
-                 &ComponentSymbolVariantListWidget::updateTable);
-    }
+    // mVariantList->unregisterObserver(this);
+    // for (const ComponentSymbolVariant& variant : *mVariantList) {
+    //  disconnect(&variant, &ComponentSymbolVariant::edited, this,
+    //             &ComponentSymbolVariantListWidget::updateTable);
+    //}
   }
   mUndoStack       = undoStack;
   mVariantList     = variants;
   mEditorProvider  = editorProvider;
   mSelectedVariant = tl::nullopt;
   if (mVariantList) {
-    mVariantList->registerObserver(this);
-    for (const ComponentSymbolVariant& variant : *mVariantList) {
-      connect(&variant, &ComponentSymbolVariant::edited, this,
-              &ComponentSymbolVariantListWidget::updateTable);
-    }
+    // mVariantList->registerObserver(this);
+    // for (const ComponentSymbolVariant& variant : *mVariantList) {
+    //  connect(&variant, &ComponentSymbolVariant::edited, this,
+    //          &ComponentSymbolVariantListWidget::updateTable);
+    //}
   }
   updateTable();
 }
@@ -201,7 +201,7 @@ void ComponentSymbolVariantListWidget::btnDownClicked() noexcept {
  *  Observer
  ******************************************************************************/
 
-void ComponentSymbolVariantListWidget::listObjectAdded(
+/*void ComponentSymbolVariantListWidget::listObjectAdded(
     const ComponentSymbolVariantList& list, int newIndex,
     const std::shared_ptr<ComponentSymbolVariant>& ptr) noexcept {
   Q_UNUSED(list);
@@ -221,7 +221,7 @@ void ComponentSymbolVariantListWidget::listObjectRemoved(
   disconnect(ptr.get(), &ComponentSymbolVariant::edited, this,
              &ComponentSymbolVariantListWidget::updateTable);
   updateTable();
-}
+}*/
 
 /*******************************************************************************
  *  Private Methods

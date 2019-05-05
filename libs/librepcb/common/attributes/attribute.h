@@ -27,6 +27,7 @@
 #include "../fileio/cmd/cmdlistelementremove.h"
 #include "../fileio/cmd/cmdlistelementsswap.h"
 #include "../fileio/serializableobjectlist.h"
+#include "../notification.h"
 #include "attributekey.h"
 
 #include <QtCore>
@@ -50,6 +51,13 @@ class Attribute final : public SerializableObject {
   Q_DECLARE_TR_FUNCTIONS(Attribute)
 
 public:
+  // Notifications
+  Notification<const Attribute&>                      onEdited;
+  Notification<const Attribute&, const AttributeKey&> onKeyChanged;
+  Notification<const Attribute&, const AttributeType&, const QString&,
+               const AttributeUnit*>
+      onTypeValueUnitChanged;
+
   // Constructors / Destructor
   Attribute() = delete;
   Attribute(const Attribute& other) noexcept;
@@ -69,7 +77,7 @@ public:
   QString              getValueTr(bool showUnit) const noexcept;
 
   // Setters
-  void setKey(const AttributeKey& key) noexcept { mKey = key; }
+  void setKey(const AttributeKey& key) noexcept;
   void setTypeValueUnit(const AttributeType& type, const QString& value,
                         const AttributeUnit* unit);
 

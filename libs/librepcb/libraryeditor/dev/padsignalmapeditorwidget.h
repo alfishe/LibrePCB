@@ -54,8 +54,7 @@ namespace editor {
  * @author ubruhin
  * @date 2017-03-25
  */
-class PadSignalMapEditorWidget final : public QWidget,
-                                       private DevicePadSignalMap::IF_Observer {
+class PadSignalMapEditorWidget final : public QWidget {
   Q_OBJECT
 
 private:  // Types
@@ -82,13 +81,14 @@ private:  // Slots
   void componentSignalChanged(int index) noexcept;
 
 private:  // Observer
-  void listObjectAdded(
-      const DevicePadSignalMap& list, int newIndex,
-      const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept override;
-  void listObjectRemoved(
-      const DevicePadSignalMap& list, int oldIndex,
-      const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept override;
-
+          // void listObjectAdded(
+          //    const DevicePadSignalMap& list, int newIndex,
+          //    const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept
+          //    override;
+          // void listObjectRemoved(
+          //    const DevicePadSignalMap& list, int oldIndex,
+          //    const std::shared_ptr<DevicePadSignalMapItem>& ptr) noexcept
+          //    override;
 private:  // Methods
   void updateTable() noexcept;
   void setTableRowContent(int row, const Uuid& padUuid, const QString& padName,
