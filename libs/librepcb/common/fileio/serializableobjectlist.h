@@ -23,6 +23,7 @@
 /*******************************************************************************
  *  Includes
  ******************************************************************************/
+#include "../notification.h"
 #include "../uuid.h"
 #include "serializableobject.h"
 
@@ -93,17 +94,6 @@ class SerializableObjectList : public SerializableObject {
   Q_DECLARE_TR_FUNCTIONS(SerializableObjectList)
 
 public:
-  // Observer Type
-  class IF_Observer {
-  public:
-    virtual void listObjectAdded(const SerializableObjectList<T, P>& list,
-                                 int                                 newIndex,
-                                 const std::shared_ptr<T>& ptr) noexcept   = 0;
-    virtual void listObjectRemoved(const SerializableObjectList<T, P>& list,
-                                   int                                 oldIndex,
-                                   const std::shared_ptr<T>& ptr) noexcept = 0;
-  };
-
   // Iterator Types
   template <typename I, typename O>
   class Iterator {
@@ -128,38 +118,39 @@ public:
   using const_iterator =
       Iterator<typename QVector<std::shared_ptr<T>>::const_iterator, const T>;
 
+  // Notifications
+  Notification<const SerializableObjectList<T, P>&> onEdited;
+  Notification<const SerializableObjectList<T, P>&, int,
+               const std::shared_ptr<const T>&>
+      onElementAdded;
+  Notification<const SerializableObjectList<T, P>&, int,
+               const std::shared_ptr<const T>&>
+      onElementRemoved;
+  // Notification<const SerializableObjectList<T, P>&, int,
+  //             const std::shared_ptr<const T>&>
+  //    onElementEdited;
+
   // Constructors / Destructor
-  explicit SerializableObjectList(IF_Observer* observer = nullptr) noexcept {
-    if (observer) registerObserver(observer);
-  }
-  SerializableObjectList(const SerializableObjectList<T, P>& other,
-                         IF_Observer* observer = nullptr) noexcept {
+  SerializableObjectList() noexcept {}
+  SerializableObjectList(const SerializableObjectList<T, P>& other) noexcept {
     *this = other;  // copy all elements
-    if (observer) registerObserver(observer);
   }
-  SerializableObjectList(SerializableObjectList<T, P>&& other,
-                         IF_Observer* observer = nullptr) noexcept {
+  SerializableObjectList(SerializableObjectList<T, P>&& other) noexcept {
     mObjects = other.mObjects;  // copy all pointers (NOT the objects!)
     other.clear();  // remove all other's elements with notifying its observers
-    if (observer) registerObserver(observer);
   }
-  SerializableObjectList(std::initializer_list<std::shared_ptr<T>> elements,
-                         IF_Observer* observer = nullptr) noexcept {
+  SerializableObjectList(
+      std::initializer_list<std::shared_ptr<T>> elements) noexcept {
     mObjects = elements;
-    if (observer) registerObserver(observer);
   }
-  SerializableObjectList(std::initializer_list<T> elements,
-                         IF_Observer*             observer = nullptr) noexcept {
+  SerializableObjectList(std::initializer_list<T> elements) noexcept {
     mObjects.reserve(elements.size());
     for (const T& obj : elements) {
-      append(std::make_shared<T>(obj));
-    }  // copy element
-    if (observer) registerObserver(observer);
+      append(std::make_shared<T>(obj));  // copy element
+    }
   }
-  explicit SerializableObjectList(const SExpression& node,
-                                  IF_Observer*       observer = nullptr) {
+  explicit SerializableObjectList(const SExpression& node) {
     loadFromDomElement(node);  // can throw
-    if (observer) registerObserver(observer);
   }
   virtual ~SerializableObjectList() noexcept {}
 
@@ -355,16 +346,6 @@ public:
     return copiedList;
   }
 
-  // Observer Methods
-  void registerObserver(IF_Observer* o) noexcept {
-    Q_ASSERT(o);
-    mObservers.append(o);
-  }
-  void unregisterObserver(IF_Observer* o) noexcept {
-    Q_ASSERT(o);
-    mObservers.removeOne(o);
-  }
-
   // Operator Overloadings
   std::shared_ptr<T> operator[](int i) noexcept {
     Q_ASSERT(contains(i));
@@ -405,15 +386,23 @@ public:
   }
 
 protected:  // Methods
+  // void elementEditedHandler(const T& obj) noexcept {
+  //  int index = indexOf(&obj);
+  //  if (contains(index)) {
+  //    onElementEdited.notify(*this, index, at(index));
+  //    onEdited.notify(*this);
+  //  } else {
+  //    qCritical() << "SerializableObjectList: Received notification from "
+  //                   "unknown element!";
+  //  }
+  //}
   void notifyObjectAdded(int index, const std::shared_ptr<T>& obj) noexcept {
-    foreach (IF_Observer* observer, mObservers) {
-      observer->listObjectAdded(*this, index, obj);
-    }
+    onElementAdded.notify(*this, index, obj);
+    onEdited.notify(*this);
   }
   void notifyObjectRemoved(int index, const std::shared_ptr<T>& obj) noexcept {
-    foreach (IF_Observer* observer, mObservers) {
-      observer->listObjectRemoved(*this, index, obj);
-    }
+    onElementRemoved.notify(*this, index, obj);
+    onEdited.notify(*this);
   }
   void throwKeyNotFoundException(const Uuid& key) const {
     throw RuntimeError(
@@ -436,7 +425,6 @@ protected:  // Methods
 
 protected:  // Data
   QVector<std::shared_ptr<T>> mObjects;
-  QList<IF_Observer*>         mObservers;
 };
 
 }  // namespace librepcb
