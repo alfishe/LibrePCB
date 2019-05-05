@@ -44,19 +44,25 @@ public:
   Notification() noexcept : mId(0) {}
   Notification(const Notification& other) = delete;
 
-  template <typename T>
-  int connect(T* inst, void (T::*func)(Args...)) const noexcept {
-    return connect([=](Args... args) { (inst->*func)(args...); });
-  }
-
-  template <typename T>
-  int connect(T* inst, void (T::*func)(Args...) const) const noexcept {
-    return connect([=](Args... args) { (inst->*func)(args...); });
-  }
-
   int connect(const std::function<void(Args...)>& slot) const noexcept {
     mObservers.insert(std::make_pair(++mId, slot));
     return mId;
+  }
+
+  template <typename T>
+  int connect(T& obj, void (T::*func)(Args...)) const noexcept {
+    return connect([=, &obj](Args... args) { (obj.*func)(args...); });
+  }
+
+  template <typename T, typename... FuncArgs, typename... FwArgs>
+  int connect(T& obj, void (T::*func)(FuncArgs...), FwArgs... args) const
+      noexcept {
+    return connect([=, &obj](Args...) { (obj.*func)(args...); });
+  }
+
+  template <typename... OtherArgs, typename... FwArgs>
+  int connect(Notification<OtherArgs...>& obj, FwArgs... args) const noexcept {
+    return connect([=, &obj](Args...) { obj.notify(args...); });
   }
 
   void disconnect(int id) const noexcept { mObservers.erase(id); }
